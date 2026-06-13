@@ -1,5 +1,7 @@
 import "./App.css";
+import { Folder } from "lucide-react";
 
+import { galleryData } from "./galleryData";
 import {
   Trees,
   Factory,
@@ -17,6 +19,8 @@ import {
 import { useState } from "react";
 
 function App() {
+  const [activeGallery, setActiveGallery] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const processSteps = [
 
@@ -131,58 +135,119 @@ ${message}
 return (
     <>
       <header className="header">
-        <div className="header-inner">
 
-          <div className="brand">
-            <img src="/logo.png" alt="HGF Logo" className="logo" />
+  <div className="container">
 
-            <div className="brand-text">
-              Himalayan Green Fuel LLP
-              <span>| Clean Energy From The Himalayas</span>
-            </div>
-          </div>
+    <div className="header-wrapper">
 
-          <nav className="nav">
-            <a href="#about">About</a>
-            <a href="#product">Product</a>
-            <a href="#gallery">Gallery</a>
-            <a href="#contact">Contact</a>
-          </nav>
+      {/* Brand */}
+
+      <div className="header-brand">
+
+        <img
+          src="/logo.png"
+          alt="Himalayan Green Fuel"
+          className="header-logo"
+        />
+
+        <div className="header-info">
+
+          <h2>Himalayan Green Fuel LLP</h2>
 
         </div>
-      </header>
 
-      <section id="home" className="hero">
-        <div className="hero-overlay"></div>
+      </div>
 
-        <div className="hero-content">
+      {/* Mobile Button */}
 
-         <h1>
-  Reducing Forest Fires.
-  <br />
-  Delivering Renewable Fuel.
-</h1>
+      <button
+        className="header-toggle"
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
+        ☰
+      </button>
 
-<p>
-  Premium biomass pellets manufactured in Uttarakhand for
-  boilers, furnaces and industrial energy applications.
-</p>
+      {/* Navigation */}
 
-          <div className="hero-buttons">
-            <a
-              href="mailto:himalayangreenfuel@gmail.com"
-              className="primary-btn"
-            >
-              Request Quote
-            </a>
+      <nav className={`header-nav ${menuOpen ? "open" : ""}`}>
 
-            <a href="#plant-tour" className="secondary-btn">
-              View Plant
-            </a>
-          </div>
+        <a href="#about" onClick={() => setMenuOpen(false)}>
+          About
+        </a>
+
+        <a href="#product" onClick={() => setMenuOpen(false)}>
+          Product
+        </a>
+
+        <a href="#manufacturing" onClick={() => setMenuOpen(false)}>
+          Process
+        </a>
+
+        <a href="#gallery" onClick={() => setMenuOpen(false)}>
+          Gallery
+        </a>
+
+        <a href="#contact" onClick={() => setMenuOpen(false)}>
+          Contact
+        </a>
+
+      </nav>
+
+    </div>
+
+  </div>
+
+</header>
+
+{/* ==========================================
+   HERO
+========================================== */}
+
+<section id="home" className="hero">
+
+  <div className="container">
+
+    <div className="hero-wrapper">
+
+      <div className="hero-content">
+
+        <h1 className="hero-title">
+          Reducing Forest Fires.
+          <br />
+          Delivering Renewable Fuel.
+        </h1>
+
+        <p className="hero-description">
+          Premium biomass pellets manufactured in Uttarakhand for boilers,
+          furnaces and industrial energy applications.
+        </p>
+
+        <div className="hero-buttons">
+
+          <a
+            href="mailto:himalayangreenfuel@gmail.com"
+            className="primary-btn"
+          >
+            Request Quote
+          </a>
+
+          <a
+            href="#plant-tour"
+            className="secondary-btn"
+          >
+            View Plant
+          </a>
+
         </div>
 
-     </section>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
 <section className="stats">
 
   <div className="container">
@@ -610,39 +675,154 @@ id="manufacturing"
 
 </section>
 
-{/* =======================
-        GALLERY
-======================== */}
+{/* ==========================================
+   GALLERY
+========================================== */}
 
 <section id="gallery" className="gallery-section">
 
   <div className="container">
 
-<div className="section-heading">
+    <div className="section-heading">
 
-    <div className="section-tag">
+      <div className="section-tag">
         GALLERY
-    </div>
+      </div>
 
-</div>
-
-    <div className="gallery-grid">
-
-      {photos.map((img, index) => (
-
-        <div
-          className="gallery-item"
-          key={index}
-        >
-          <img src={img} alt={`Gallery ${index + 1}`} />
-
-          <div className="gallery-overlay"></div>
-
-        </div>
-
-      ))}
+      <h2 className="section-title">
+        Media Center
+      </h2>
 
     </div>
+
+    <div className="gallery-folders">
+
+      {/* Inauguration */}
+
+      <div
+        className="gallery-folder"
+        onClick={() =>
+          setActiveGallery(
+            activeGallery === "inauguration" ? null : "inauguration"
+          )
+        }
+      >
+        <div className="folder-icon">📁</div>
+        <h3>Inauguration</h3>
+      </div>
+
+      {/* Plant */}
+
+      <div
+        className="gallery-folder"
+        onClick={() =>
+          setActiveGallery(
+            activeGallery === "plant" ? null : "plant"
+          )
+        }
+      >
+        <div className="folder-icon">📁</div>
+        <h3>Plant</h3>
+      </div>
+
+      {/* Events */}
+
+      <div
+        className="gallery-folder"
+        onClick={() =>
+          setActiveGallery(
+            activeGallery === "events" ? null : "events"
+          )
+        }
+      >
+        <div className="folder-icon">📁</div>
+        <h3>Events</h3>
+      </div>
+
+      {/* SHG */}
+
+      <div
+        className="gallery-folder"
+        onClick={() =>
+          setActiveGallery(
+            activeGallery === "shg" ? null : "shg"
+          )
+        }
+      >
+        <div className="folder-icon">📁</div>
+        <h3>Self Help Groups (SHG)</h3>
+      </div>
+
+    </div>
+
+    {/* ===============================
+        INAUGURATION IMAGES
+    ================================ */}
+
+    {activeGallery === "inauguration" && (
+
+      <div className="gallery-images">
+
+        <img src="/gallery/inauguration/1.png" alt="" />
+        <img src="/gallery/inauguration/2.jpg" alt="" />
+        <img src="/gallery/inauguration/3.png" alt="" />
+        <img src="/gallery/inauguration/4.png" alt="" />
+
+      </div>
+
+    )}
+
+    {/* ===============================
+        PLANT IMAGES
+    ================================ */}
+
+    {activeGallery === "plant" && (
+
+      <div className="gallery-images">
+
+        <img src="/gallery/plant/1.png" alt="" />
+        <img src="/gallery/plant/2.png" alt="" />
+        <img src="/gallery/plant/3.jpg" alt="" />
+        <img src="/gallery/plant/4.png" alt="" />
+        <img src="/gallery/plant/5.png" alt="" />
+        <img src="/gallery/plant/6.png" alt="" />
+      </div>
+
+    )}
+
+    {/* ===============================
+        EVENT IMAGES
+    ================================ */}
+
+    {activeGallery === "events" && (
+
+      <div className="gallery-images">
+
+        <img src="/gallery/events/1.jpg" alt="" />
+        <img src="/gallery/events/2.jpg" alt="" />
+        <img src="/gallery/events/3.jpg" alt="" />
+
+      </div>
+
+    )}
+
+    {/* ===============================
+        SHG IMAGES
+    ================================ */}
+
+    {activeGallery === "shg" && (
+
+      <div className="gallery-images">
+
+        <img src="/gallery/shg/1.jpg" alt="" />
+        <img src="/gallery/shg/2.jpeg" alt="" />
+        <img src="/gallery/shg/3.jpeg" alt="" />
+        <img src="/gallery/shg/4.jpeg" alt="" />
+        <img src="/gallery/shg/5.png" alt="" />
+        <img src="/gallery/shg/6.jpeg" alt="" />
+      </div>
+
+    )}
 
   </div>
 
