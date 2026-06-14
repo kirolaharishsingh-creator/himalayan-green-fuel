@@ -1034,16 +1034,21 @@ RIGHT SHOWCASE
 
 .esg-showcase{
     position:relative;
+
+    width:100%;
+    max-width:100%;
+    min-width:0;
+
     min-height:720px;
 
     border-radius:34px;
     overflow:hidden;
 
-    border: 1px solid rgba(40,130,55,.08);
+    border:1px solid rgba(40,130,55,.08);
 
     box-shadow:
-        0 20px 50px rgba(0,0,0,0.08),
-        0 8px 20px rgba(0,0,0,0.04);
+        0 20px 50px rgba(0,0,0,.08),
+        0 8px 20px rgba(0,0,0,.04);
 }
 
 .esg-showcase img{
