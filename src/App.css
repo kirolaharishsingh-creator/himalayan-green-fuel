@@ -186,13 +186,17 @@ MOBILE
 
 .header-wrapper{
 
-    min-height:75px;
+    min-height:70px;
+
+    padding:12px 0;
 
 }
 
 .header-logo{
 
-    width:60px;
+    width:48px;
+
+    height:auto;
 
 }
 
@@ -705,6 +709,7 @@ padding:24px;
     padding:100px 0;
     position:relative;
     overflow:hidden;
+    scroll-margin-top: 100px;
 }
 
 .about-layout{
@@ -745,7 +750,8 @@ padding:24px;
 .about-content{
     padding:40px;
     border-radius:24px;
-    max-width: 700px;
+    max-width:100%;
+    width:100%;
     margin-left: auto;
     background:rgba(255,255,255,.92);
     backdrop-filter:blur(6px);
@@ -877,41 +883,33 @@ font-size:44px;
 @media(max-width:768px){
 
 .about-section{
-
-padding:70px 0;
-
+    padding:70px 20px;
 }
 
 .about-image{
-   margin-left:30px;
+    width:100%;
+    margin:0;
 }
 
-
 .about-content{
-
-text-align:center;
-margin-left:13px;
-max-width:480px;
+    width:100%;
+    max-width:100%;
+    margin:0;
+    padding:30px 24px;
+    text-align:center;
 }
 
 .about-line{
-
-margin:20px auto 28px;
-
+    margin:20px auto 28px;
 }
 
 .about-content h2{
-
-font-size:34px;
-
+    font-size:34px;
 }
 
 .about-content p{
-
-font-size:17px;
-
+    font-size:17px;
 }
-
 }
 
 /* ===================================
@@ -1181,21 +1179,21 @@ RIGHT SHOWCASE
     display:flex;
     flex-direction:column;
     gap:35px;
-    margin-left: 2%;
-    margin-right: 2%;
+
+    margin:0;
+    padding:0 20px;
 
 }
-
 /* Showcase first */
 
 .esg-showcase{
 
     order:1;
 
+    width:100%;
     min-height:660px;
 
 }
-
 /* Cards second */
 
 .esg-cards{
@@ -1279,6 +1277,11 @@ RIGHT SHOWCASE
 
 }
 
+.esg-card{
+    padding:20px;
+    min-height:auto;
+}
+
 /* ==========================
    PRODUCT SECTION
 ========================== */
@@ -1293,6 +1296,7 @@ RIGHT SHOWCASE
     padding:80px 0;
     overflow:hidden;
     background:#f5f6f2;
+    scroll-margin-top: 80px;
 }
 
 .product-section::before{
@@ -1313,7 +1317,7 @@ RIGHT SHOWCASE
     grid-template-columns:1fr 1fr;
     gap:80px;
     align-items:center;
-    padding:0 50px;
+    padding:0 20px;
 }
 
 .product-image img{
@@ -1351,6 +1355,7 @@ RIGHT SHOWCASE
     font-size:58px;
     line-height:1.1;
     color:#2E7D32;
+    font-weight:800;
     margin-bottom:18px;
 }
 
@@ -1450,7 +1455,7 @@ RIGHT SHOWCASE
 
     gap:40px;
 
-    padding:0 0.1;
+    padding:0 20px;
 
 }
 
@@ -1466,9 +1471,11 @@ RIGHT SHOWCASE
 
     width:100%;
 
-    max-width:420px;
+    max-width:100%;
 
     margin:auto;
+
+    display:block;
 
 }
 
@@ -1539,6 +1546,7 @@ RIGHT SHOWCASE
     background:#f7f8f4;
     position:relative;
     overflow:hidden;
+    scroll-margin-top: 70px;
 }
 
 .process-section::before{
@@ -1859,6 +1867,8 @@ font-size:15px;
 
     background:#fff;
 
+    scroll-margin-top: 90px;
+
 }
 
 .gallery-folders{
@@ -2007,9 +2017,11 @@ font-size:15px;
 
 @media(max-width:768px){
 
+@media(max-width:768px){
+
 .gallery-section{
 
-    padding:70px 0;
+    padding:70px 20px;
 
 }
 
@@ -2023,7 +2035,11 @@ font-size:15px;
 
 .gallery-folder{
 
-    padding:30px 20px;
+    padding:28px 20px;
+
+    width:100%;
+
+}
 
 }
 
@@ -2042,6 +2058,8 @@ font-size:15px;
 .gallery-images{
 
     grid-template-columns:1fr;
+
+    gap:18px;
 
 }
 
@@ -2332,6 +2350,34 @@ height:260px;
 
 }
 
+@media(max-width:768px){
+
+.plant-tour-section{
+    padding:70px 20px;
+}
+
+.plant-video-card{
+    margin:40px auto 0;
+    width:100%;
+}
+
+.plant-video-card img{
+    height:240px;
+}
+
+.plant-overlay h3{
+    font-size:24px;
+    text-align:center;
+}
+
+.play-circle{
+    width:80px;
+    height:80px;
+    font-size:30px;
+}
+
+}
+
 /*=====================================
 CONTACT SECTION
 =====================================*/
@@ -2345,6 +2391,8 @@ background:#f7f8f4;
 position:relative;
 
 overflow:hidden;
+
+scroll-margin-top: 70px;
 
 }
 
