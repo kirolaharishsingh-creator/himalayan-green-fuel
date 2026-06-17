@@ -763,10 +763,12 @@ id="manufacturing"
 
       <div className="gallery-images">
 
-        <img src="/gallery/inauguration/1.png" alt="" />
-        <img src="/gallery/inauguration/2.jpg" alt="" />
-        <img src="/gallery/inauguration/3.png" alt="" />
-        <img src="/gallery/inauguration/4.png" alt="" />
+        <img src="/gallery/inauguration/1.jpeg" alt="" />
+        <img src="/gallery/inauguration/2.jpeg" alt="" />
+        <img src="/gallery/inauguration/3.jpeg" alt="" />
+        <img src="/gallery/inauguration/4.jpeg" alt="" />
+        <img src="/gallery/inauguration/5.jpeg" alt="" />
+        <img src="/gallery/inauguration/6.jpeg" alt="" />
 
       </div>
 
@@ -818,7 +820,7 @@ id="manufacturing"
         <img src="/gallery/shg/2.jpeg" alt="" />
         <img src="/gallery/shg/3.jpeg" alt="" />
         <img src="/gallery/shg/4.jpeg" alt="" />
-        <img src="/gallery/shg/5.png" alt="" />
+        <img src="/gallery/shg/5.jpeg" alt="" />
         <img src="/gallery/shg/6.jpeg" alt="" />
       </div>
 
