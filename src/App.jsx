@@ -22,6 +22,10 @@ function App() {
   const [activeGallery, setActiveGallery] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [currentImage, setCurrentImage] = useState(0);
+
   const processSteps = [
 
     {
@@ -83,6 +87,43 @@ function App() {
   const [activeProcess, setActiveProcess] = useState(processSteps[0]);
   const [showVideo, setShowVideo] = useState(false);
   
+  const galleries = {
+
+  inauguration: [
+    "/gallery/inauguration/1.jpeg",
+    "/gallery/inauguration/2.jpeg",
+    "/gallery/inauguration/3.jpeg",
+    "/gallery/inauguration/4.jpeg",
+    "/gallery/inauguration/5.jpeg",
+    "/gallery/inauguration/6.jpeg",
+  ],
+
+  plant: [
+    "/gallery/plant/1.png",
+    "/gallery/plant/2.png",
+    "/gallery/plant/3.jpg",
+    "/gallery/plant/4.png",
+    "/gallery/plant/5.png",
+    "/gallery/plant/6.png",
+  ],
+
+  events: [
+    "/gallery/events/1.jpg",
+    "/gallery/events/2.jpg",
+    "/gallery/events/3.jpg",
+  ],
+
+  shg: [
+    "/gallery/shg/1.jpg",
+    "/gallery/shg/2.jpeg",
+    "/gallery/shg/3.jpeg",
+    "/gallery/shg/4.jpeg",
+    "/gallery/shg/5.jpeg",
+    "/gallery/shg/6.jpeg",
+  ]
+
+};
+
 const photos = [
 
   "/gallery/gallery1.jpeg",
@@ -132,6 +173,18 @@ ${message}
 
 };
 
+const openGallery = (gallery) => {
+
+  console.log("Opening:", gallery);
+
+  setGalleryImages(galleries[gallery]);
+
+  setCurrentImage(0);
+
+  setGalleryOpen(true);
+
+};
+
 return (
     <>
       <header className="header">
@@ -142,21 +195,19 @@ return (
 
       {/* Brand */}
 
-      <div className="header-brand">
+      <a href="#home" className="header-brand">
 
-        <img
-          src="/logo.png"
-          alt="Himalayan Green Fuel"
-          className="header-logo"
-        />
+  <img
+    src="/logo.png"
+    alt="Himalayan Green Fuel"
+    className="header-logo"
+  />
 
-        <div className="header-info">
+  <div className="header-info">
+    <h2>Himalayan Green Fuel LLP</h2>
+  </div>
 
-          <h2>Himalayan Green Fuel LLP</h2>
-
-        </div>
-
-      </div>
+</a>
 
       {/* Mobile Button */}
 
@@ -701,11 +752,7 @@ id="manufacturing"
 
       <div
         className="gallery-folder"
-        onClick={() =>
-          setActiveGallery(
-            activeGallery === "inauguration" ? null : "inauguration"
-          )
-        }
+        onClick={() => openGallery("inauguration")}
       >
         <div className="folder-icon">📁</div>
         <h3>Inauguration</h3>
@@ -714,13 +761,11 @@ id="manufacturing"
       {/* Plant */}
 
       <div
-        className="gallery-folder"
-        onClick={() =>
-          setActiveGallery(
-            activeGallery === "plant" ? null : "plant"
-          )
-        }
-      >
+  className={`gallery-folder ${
+    activeGallery === "plant" ? "active" : ""
+  }`}
+  onClick={() => openGallery("plant")}
+>
         <div className="folder-icon">📁</div>
         <h3>Plant</h3>
       </div>
@@ -729,11 +774,7 @@ id="manufacturing"
 
       <div
         className="gallery-folder"
-        onClick={() =>
-          setActiveGallery(
-            activeGallery === "events" ? null : "events"
-          )
-        }
+        onClick={() => openGallery("events")}
       >
         <div className="folder-icon">📁</div>
         <h3>Events</h3>
@@ -743,11 +784,7 @@ id="manufacturing"
 
       <div
         className="gallery-folder"
-        onClick={() =>
-          setActiveGallery(
-            activeGallery === "shg" ? null : "shg"
-          )
-        }
+        onClick={() => openGallery("shg")}
       >
         <div className="folder-icon">📁</div>
         <h3>Self Help Groups (SHG)</h3>
@@ -761,7 +798,7 @@ id="manufacturing"
 
     {activeGallery === "inauguration" && (
 
-      <div className="gallery-images">
+      <div id="gallery-images" className="gallery-images">
 
         <img src="/gallery/inauguration/1.jpeg" alt="" />
         <img src="/gallery/inauguration/2.jpeg" alt="" />
@@ -780,7 +817,7 @@ id="manufacturing"
 
     {activeGallery === "plant" && (
 
-      <div className="gallery-images">
+      <div id="gallery-images" className="gallery-images">
 
         <img src="/gallery/plant/1.png" alt="" />
         <img src="/gallery/plant/2.png" alt="" />
@@ -798,7 +835,7 @@ id="manufacturing"
 
     {activeGallery === "events" && (
 
-      <div className="gallery-images">
+      <div id="gallery-images" className="gallery-images">
 
         <img src="/gallery/events/1.jpg" alt="" />
         <img src="/gallery/events/2.jpg" alt="" />
@@ -814,7 +851,7 @@ id="manufacturing"
 
     {activeGallery === "shg" && (
 
-      <div className="gallery-images">
+      <div id="gallery-images" className="gallery-images">
 
         <img src="/gallery/shg/1.jpg" alt="" />
         <img src="/gallery/shg/2.jpeg" alt="" />
@@ -1146,6 +1183,67 @@ allowFullScreen
     </div>
 
   </div>
+
+  {/* ==========================
+    GALLERY POPUP
+========================== */}
+
+{galleryOpen && (
+
+<div
+  className="gallery-modal"
+  onClick={() => setGalleryOpen(false)}
+>
+
+  <div
+    className="gallery-modal-content"
+    onClick={(e) => e.stopPropagation()}
+  >
+
+    <button
+      className="gallery-close"
+      onClick={() => setGalleryOpen(false)}
+    >
+      ✕
+    </button>
+
+    <img
+      src={galleryImages[currentImage]}
+      alt="Gallery"
+      className="gallery-modal-image"
+    />
+
+    <button
+  className="gallery-prev"
+  onClick={() =>
+    setCurrentImage(
+      currentImage === 0
+        ? galleryImages.length - 1
+        : currentImage - 1
+    )
+  }
+>
+  ❮
+</button>
+
+<button
+  className="gallery-next"
+  onClick={() =>
+    setCurrentImage(
+      currentImage === galleryImages.length - 1
+        ? 0
+        : currentImage + 1
+    )
+  }
+>
+  ❯
+</button>
+
+  </div>
+
+</div>
+
+)}
 
 </footer>
 

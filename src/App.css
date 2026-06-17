@@ -49,13 +49,13 @@ width: 100%;
 /* Brand */
 
 .header-brand{
-
     display:flex;
-
     align-items:center;
-
     gap:16px;
 
+    text-decoration:none;
+    color:inherit;
+    cursor:pointer;
 }
 
 .header-logo{
@@ -1864,7 +1864,7 @@ font-size:15px;
 
 .gallery-section{
 
-    padding:90px 0;
+    padding:70px 0;
 
     background:#fff;
 
@@ -1881,6 +1881,8 @@ font-size:15px;
     gap:30px;
 
     margin-top:60px;
+
+    padding:0 20px;
 
 }
 
@@ -1901,6 +1903,7 @@ font-size:15px;
     transition:.35s ease;
 
     box-shadow:0 10px 25px rgba(0,0,0,.06);
+    
 
 }
 
@@ -1913,6 +1916,7 @@ font-size:15px;
     box-shadow:0 20px 40px rgba(46,125,50,.15);
 
 }
+
 
 .folder-icon{
 
@@ -2890,5 +2894,177 @@ grid-template-columns:1fr;
 
 margin-bottom:40px;
 }
+
+}
+
+/* ==========================================
+   GALLERY POPUP
+========================================== */
+
+.gallery-modal{
+
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.92);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    z-index:9999;
+
+    animation:fadeIn .35s ease;
+
+}
+
+.gallery-modal-content{
+
+    position:relative;
+
+    width:90%;
+    max-width:1100px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+}
+
+.gallery-modal-image{
+
+    width:100%;
+    max-height:85vh;
+
+    object-fit:contain;
+
+    border-radius:18px;
+
+}
+
+.gallery-close{
+
+    position:absolute;
+
+    top:-50px;
+    right:0;
+
+    width:42px;
+    height:42px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#fff;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+}
+
+.gallery-close:hover{
+
+    background:#2E7D32;
+
+    color:#fff;
+
+}
+
+.gallery-prev,
+.gallery-next{
+
+    position:fixed;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    width:65px;
+    height:65px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.95);
+
+    color:#2E7D32;
+
+    font-size:34px;
+
+    cursor:pointer;
+
+    z-index:10001;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+}
+
+.gallery-prev{
+
+    left:40px;
+
+}
+
+.gallery-next{
+
+    right:40px;
+
+}
+
+/* ==========================
+   GALLERY POPUP MOBILE
+========================== */
+
+@media (max-width: 768px) {
+
+  .gallery-modal-content{
+
+    width:95%;
+
+  }
+
+  .gallery-prev,
+  .gallery-next{
+
+    width:45px;
+    height:45px;
+
+    font-size:24px;
+
+    top:auto;
+    bottom:15px;
+
+    transform:none;
+
+    background:rgba(0,0,0,.65);
+
+    color:#fff;
+
+  }
+
+  .gallery-prev{
+
+    left:25%;
+
+  }
+
+  .gallery-next{
+
+    right:25%;
+
+  }
+
+  .gallery-close{
+
+    top:10px;
+    right:10px;
+
+    width:38px;
+    height:38px;
+
+  }
 
 }
