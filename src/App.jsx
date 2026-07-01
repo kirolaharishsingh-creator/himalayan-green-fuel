@@ -86,6 +86,7 @@ function App() {
 
   const [activeProcess, setActiveProcess] = useState(processSteps[0]);
   const [showVideo, setShowVideo] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
   
   const galleries = {
 
@@ -195,7 +196,17 @@ return (
 
       {/* Brand */}
 
-      <a href="#home" className="header-brand">
+      <div
+  className="header-brand"
+  onClick={() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
+    setMenuOpen(false);
+  }}
+>
 
   <img
     src="/logo.png"
@@ -207,7 +218,7 @@ return (
     <h2>Himalayan Green Fuel LLP</h2>
   </div>
 
-</a>
+</div>
 
       {/* Mobile Button */}
 
@@ -868,7 +879,7 @@ id="manufacturing"
 </section>
 
 {/* =========================
-        PLANT TOUR
+        VIDEOS
 ========================= */}
 
 <section id="plant-tour" className="plant-tour-section">
@@ -878,29 +889,79 @@ id="manufacturing"
     <div className="section-heading">
 
       <div className="section-tag">
-        PLANT TOUR
+        VIDEOS
       </div>
 
       <h2 className="section-title">
-        Experience Our Manufacturing Facility
+        Inside Himalayan Green Fuel
       </h2>
 
     </div>
 
-    <div
-      className="plant-video-card"
-      onClick={() => setShowVideo(true)}
-    >
+    <div className="video-grid">
 
-      <img
-        src="/gallery/plant-tour.png"
-        alt="Plant Tour"
-      />
+      {/* Left Video */}
 
-      <div className="plant-overlay">
+      <div className="video-item">
 
-        <div className="play-circle">
-          ▶
+        <h3 className="video-heading">
+          🎬 Official Project Video
+        </h3>
+
+        <div
+          className="plant-video-card"
+          onClick={() => {
+            setVideoUrl("https://www.youtube.com/embed/eibS_CytZzc?autoplay=1");
+            setShowVideo(true);
+          }}
+        >
+
+          <img
+            src="/gallery/plant-tour.png"
+            alt="Official Project Video"
+          />
+
+          <div className="plant-overlay">
+
+            <div className="play-circle">
+              ▶
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Right Video */}
+
+      <div className="video-item">
+
+        <h3 className="video-heading">
+          🎥 Factory Tour by Local Creator
+        </h3>
+
+        <div
+          className="plant-video-card"
+          onClick={() => {
+            setVideoUrl("https://www.youtube.com/embed/bCFperu4R_s?autoplay=1");
+            setShowVideo(true);
+          }}
+        >
+
+          <img
+            src="/gallery/vlog-thumbnail.png"
+            alt="Factory Tour by Local Creator"
+          />
+
+          <div className="plant-overlay">
+
+            <div className="play-circle">
+              ▶
+            </div>
+
+          </div>
+
         </div>
 
       </div>
@@ -911,46 +972,38 @@ id="manufacturing"
 
 </section>
 
+
 {showVideo && (
 
-<div
+  <div
     className="video-modal"
     onClick={() => setShowVideo(false)}
->
+  >
 
-<div
-    className="video-content"
-    onClick={(e)=>e.stopPropagation()}
->
+    <div
+      className="video-content"
+      onClick={(e) => e.stopPropagation()}
+    >
 
-<button
-className="close-video"
-onClick={()=>setShowVideo(false)}
->
+      <button
+        className="close-video"
+        onClick={() => setShowVideo(false)}
+      >
+        ✕
+      </button>
 
-✕
+      <iframe
+        width="100%"
+        height="100%"
+        src={videoUrl}
+        title="Video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
 
-</button>
+    </div>
 
-<iframe
-
-width="100%"
-
-height="100%"
-
-src="https://www.youtube.com/embed/eibS_CytZzc?autoplay=1"
-
-title="Plant Tour"
-
-allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-
-allowFullScreen
-
-></iframe>
-
-</div>
-
-</div>
+  </div>
 
 )}
 

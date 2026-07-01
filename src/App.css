@@ -706,10 +706,10 @@ padding:24px;
 ========================= */
 
 .about-section{
-    padding:100px 0;
+    padding:120px 0;
     position:relative;
     overflow:hidden;
-    scroll-margin-top: 70px;
+    scroll-margin-top: 60px;
 }
 
 .about-layout{
@@ -1293,10 +1293,10 @@ RIGHT SHOWCASE
 
 .product-section{
     position:relative;
-    padding:113px 0;
+    padding:120px 0;
     overflow:hidden;
     background:#f5f6f2;
-    scroll-margin-top: 70px;
+    scroll-margin-top: 60px;
 }
 
 .product-section::before{
@@ -1546,7 +1546,7 @@ RIGHT SHOWCASE
     background:#f7f8f4;
     position:relative;
     overflow:hidden;
-    scroll-margin-top: 70px;
+    scroll-margin-top: 60px;
 }
 
 .process-section::before{
@@ -1864,11 +1864,11 @@ font-size:15px;
 
 .gallery-section{
 
-    padding:70px 0;
+    padding:120px 0;
 
     background:#fff;
 
-    scroll-margin-top: 70px;
+    scroll-margin-top: 60px;
 
 }
 
@@ -2082,7 +2082,7 @@ PLANT TOUR
 
 .plant-tour-section{
 
-padding:50px 0;
+padding:120px 0;
 
 background:#f7f8f4;
 
@@ -2119,37 +2119,31 @@ z-index:2;
 
 .plant-video-card{
 
-display:block;
+    width:100%;
 
-position:relative;
+    border-radius:24px;
 
-overflow:hidden;
+    overflow:hidden;
 
-border-radius:28px;
+    position:relative;
 
-text-decoration:none;
+    cursor:pointer;
 
-margin:50px auto 0;
+    box-shadow:0 10px 30px rgba(0,0,0,.12);
 
-max-width:1200px;
-
-box-shadow:
-
-0 25px 60px rgba(0,0,0,.12);
+    transition:.35s;
 
 }
 
 .plant-video-card img{
 
-width:100%;
+    width:100%;
 
-display:block;
+    aspect-ratio:16/9;
 
-height:650px;
+    object-fit:cover;
 
-object-fit:cover;
-
-transition:.5s;
+    display:block;
 
 }
 
@@ -2226,6 +2220,68 @@ color:white;
 font-size:34px;
 
 font-weight:700;
+
+}
+
+/*=====================================
+VIDEOS GRID
+=====================================*/
+
+.video-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,minmax(350px,850px));
+
+    justify-content:center;
+
+    gap:60px;
+
+    margin-top:50px;
+
+}
+
+.video-item{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+}
+
+.video-heading{
+
+    text-align:center;
+
+    color:#2E7D32;
+
+    font-size:26px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+
+}
+
+/*=========================
+MOBILE
+=========================*/
+
+@media(max-width:768px){
+
+.video-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+.plant-video-card{
+
+    max-width:100%;
+
+}
 
 }
 
@@ -2397,7 +2453,7 @@ position:relative;
 
 overflow:hidden;
 
-scroll-margin-top: 70px;
+scroll-margin-top: 60px;
 
 }
 
@@ -2512,7 +2568,7 @@ font-size:15px;
 
 background:#fff;
 
-padding:40px;
+padding:30px;
 
 border-radius:25px;
 
