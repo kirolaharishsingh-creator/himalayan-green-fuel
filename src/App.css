@@ -1295,7 +1295,7 @@ RIGHT SHOWCASE
 
 .product-section{
     position:relative;
-    padding:120px 0;
+    padding:70px 0;
     overflow:hidden;
     background:#f5f6f2;
     scroll-margin-top: 60px;
@@ -1316,9 +1316,9 @@ RIGHT SHOWCASE
 
 .product-layout{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:80px;
-    align-items:center;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:60px;
+    align-items:start;
     padding:0 20px;
 }
 
@@ -1354,7 +1354,7 @@ RIGHT SHOWCASE
 }
 
 .product-content h2{
-    font-size:58px;
+    font-size:clamp(32px, 3.4vw, 50px);
     line-height:1.1;
     color:#2E7D32;
     font-weight:800;
@@ -1866,7 +1866,7 @@ font-size:15px;
 
 .gallery-section{
 
-    padding:120px 0;
+    padding:80px 0;
 
     background:#fff;
 
@@ -2084,7 +2084,7 @@ PLANT TOUR
 
 .plant-tour-section{
 
-padding:120px 0;
+padding:80px 0;
 
 background:#f7f8f4;
 
@@ -2686,7 +2686,7 @@ GOOGLE MAP
 
 .map-section{
 
-padding:120px 0;
+padding:80px 0;
 
 background:#F7F8F4;
 
@@ -3163,3 +3163,22 @@ section[id]{
         padding:0;
     }
 }
+
+/* ==========================================
+   SHARED PAGE WIDTH ON DESKTOP
+   Every section (and the header) lines up in one centered column
+   instead of running edge to edge on wide screens.
+========================================== */
+
+@media(min-width:993px){
+    .container,
+    .esg-section .container,
+    .contact-section .container{
+        max-width:1320px;
+        margin-left:auto;
+        margin-right:auto;
+        padding-left:40px;
+        padding-right:40px;
+    }
+}
+
