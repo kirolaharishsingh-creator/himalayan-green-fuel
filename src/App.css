@@ -2726,6 +2726,47 @@ height:350px;
 
 }
 
+.map-directions{
+
+text-align:center;
+
+margin-top:35px;
+
+}
+
+.directions-btn{
+
+display:inline-flex;
+align-items:center;
+justify-content:center;
+
+padding:15px 36px;
+
+border-radius:50px;
+
+background:#2E7D32;
+
+color:#fff;
+
+text-decoration:none;
+
+font-size:17px;
+font-weight:600;
+
+transition:all .35s ease;
+
+}
+
+.directions-btn:hover{
+
+background:#1B5E20;
+
+transform:translateY(-3px);
+
+box-shadow:0 12px 25px rgba(46,125,50,.35);
+
+}
+
 /*=====================================
 FOOTER
 =====================================*/
