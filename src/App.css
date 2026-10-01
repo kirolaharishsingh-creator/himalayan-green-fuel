@@ -706,17 +706,23 @@ padding:24px;
 ========================= */
 
 .about-section{
-    padding:120px 0;
+    padding:70px 0;
     position:relative;
     overflow:hidden;
     scroll-margin-top: 60px;
 }
 
+.about-section .container{
+    max-width:1320px;
+    margin:0 auto;
+    padding:0 40px;
+}
+
 .about-layout{
     display:grid;
-    grid-template-columns:1.1fr 0.9fr;
-    gap:70px;
-    align-items:center;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:50px;
+    align-items:start;
 }
 
 /* IMAGE */
@@ -727,8 +733,7 @@ padding:24px;
     border-radius:30px;
     overflow:hidden;
 
-    width:88%;
-    margin-left:100px;
+    width:100%;
 
     box-shadow:
       0 25px 60px rgba(0,0,0,.15);
@@ -748,15 +753,12 @@ padding:24px;
 /* CONTENT */
 
 .about-content{
-    padding:40px;
+    padding:36px 40px;
     border-radius:24px;
-    max-width:85%;
     width:100%;
-    margin-left: auto;
     background:rgba(255,255,255,.92);
     backdrop-filter:blur(6px);
     position: relative;
-    margin-left: 35px;
     z-index: 4;
     box-shadow:
       0 15px 40px rgba(0,0,0,.08);
@@ -819,7 +821,7 @@ padding:24px;
 /* TITLE */
 
 .about-content h2{
-    font-size:55px;
+    font-size:clamp(32px, 3.2vw, 46px);
     line-height:1.15;
     font-weight:800;
     color:#2e7d32;
@@ -841,8 +843,8 @@ padding:24px;
 /* PARAGRAPH */
 
 .about-content p{
-    font-size:20px;
-    line-height:1.9;
+    font-size:18px;
+    line-height:1.8;
     color:#4d5b68;
     max-width:650px;
     margin-bottom:18px;
@@ -3095,4 +3097,28 @@ margin-bottom:40px;
 
   }
 
+}
+/* ==========================================
+   MENU LINKS: LAND SECTIONS BELOW THE STICKY HEADER
+   (header is 61px on desktop, 145px on tablet where it wraps, 73px on mobile)
+========================================== */
+
+section[id]{
+    scroll-margin-top:61px;
+}
+
+@media(max-width:992px){
+    section[id]{
+        scroll-margin-top:145px;
+    }
+}
+
+@media(max-width:768px){
+    section[id]{
+        scroll-margin-top:73px;
+    }
+
+    .about-section .container{
+        padding:0;
+    }
 }
