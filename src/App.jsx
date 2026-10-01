@@ -1,7 +1,4 @@
 import "./App.css";
-import { Folder } from "lucide-react";
-
-import { galleryData } from "./galleryData";
 import {
   Trees,
   Factory,
@@ -19,7 +16,6 @@ import {
 import { useState } from "react";
 
 function App() {
-  const [activeGallery, setActiveGallery] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -32,7 +28,7 @@ function App() {
       id: "01",
       title: "Collection",
       icon: <Trees size={28} />,
-      image: "/gallery/collection.png",
+      image: "/gallery/collection.webp",
       description:
         "Pine needles are sustainably collected from nearby forests by local Self Help Groups."
     },
@@ -41,7 +37,7 @@ function App() {
       id: "02",
       title: "Transportation",
       icon: <Truck size={28} />,
-      image: "/gallery/transport.png",
+      image: "/gallery/transport.webp",
       description:
         "Collected pine needles are transported to our manufacturing facility."
     },
@@ -50,7 +46,7 @@ function App() {
       id: "03",
       title: "Cleaning & Drying",
       icon: <Factory size={28} />,
-      image: "/gallery/cleaning.png",
+      image: "/gallery/cleaning.webp",
       description:
         "Raw material is cleaned and dried before pellet production."
     },
@@ -59,7 +55,7 @@ function App() {
       id: "04",
       title: "Pellet Manufacturing",
       icon: <Cog size={28} />,
-      image: "/gallery/3.png",
+      image: "/gallery/3.webp",
       description:
         "Biomass is compressed into high-density pellets."
     },
@@ -77,7 +73,7 @@ function App() {
       id: "06",
       title: "Clean Energy",
       icon: <Flame size={28} />,
-      image: "/gallery/pelletizing.png",
+      image: "/gallery/pelletizing.webp",
       description:
         "Finished pellets replace coal and fossil fuels."
     }
@@ -100,18 +96,12 @@ function App() {
   ],
 
   plant: [
-    "/gallery/plant/1.png",
-    "/gallery/plant/2.png",
+    "/gallery/plant/1.webp",
+    "/gallery/plant/2.webp",
     "/gallery/plant/3.jpg",
-    "/gallery/plant/4.png",
-    "/gallery/plant/5.png",
-    "/gallery/plant/6.png",
-  ],
-
-  events: [
-    "/gallery/events/1.jpg",
-    "/gallery/events/2.jpg",
-    "/gallery/events/3.jpg",
+    "/gallery/plant/4.webp",
+    "/gallery/plant/5.webp",
+    "/gallery/plant/6.webp",
   ],
 
   shg: [
@@ -124,22 +114,6 @@ function App() {
   ]
 
 };
-
-const photos = [
-
-  "/gallery/gallery1.jpeg",
-  "/gallery/gallery2.jpeg",
-  "/gallery/gallery3.jpeg",
-  "/gallery/gallery4.jpeg",
-  "/gallery/gallery5.jpeg",
-  "/gallery/gallery6.jpeg",
-  "/gallery/gallery7.jpeg",
-  "/gallery/gallery8.jpeg"
-
-]; 
-
-const plantVideo =
-  "https://youtu.be/eibS_CytZzc?si=j3d2TuOehE4wcIuJ";
 
 const handleContactSubmit = (e) => {
 
@@ -170,13 +144,11 @@ ${message}
 `;
 
   window.location.href =
-    `mailto:xuttarakhand@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    `mailto:himalayangreenfuel@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
 };
 
 const openGallery = (gallery) => {
-
-  console.log("Opening:", gallery);
 
   setGalleryImages(galleries[gallery]);
 
@@ -384,7 +356,7 @@ return (
 
     <div className="about-bg">
           <img
-            src="/gallery/5.png"
+            src="/gallery/5.webp"
             alt="Factory"
           />
         </div>
@@ -393,7 +365,7 @@ return (
 
       <div className="about-image">
         <img
-          src="/gallery/machine.png"
+          src="/gallery/machine.webp"
           alt="Biomass Pellet Plant"
         />
       </div>
@@ -571,7 +543,7 @@ return (
 
       <div className="product-image">
         <img
-          src="/gallery/pine-needle-bg.png"
+          src="/gallery/pine-needle-bg.webp"
           alt="Pine Needle Biomass Pellets"
         />
       </div>
@@ -772,23 +744,11 @@ id="manufacturing"
       {/* Plant */}
 
       <div
-  className={`gallery-folder ${
-    activeGallery === "plant" ? "active" : ""
-  }`}
+  className="gallery-folder"
   onClick={() => openGallery("plant")}
 >
         <div className="folder-icon">📁</div>
         <h3>Plant</h3>
-      </div>
-
-      {/* Events */}
-
-      <div
-        className="gallery-folder"
-        onClick={() => openGallery("events")}
-      >
-        <div className="folder-icon">📁</div>
-        <h3>Events</h3>
       </div>
 
       {/* SHG */}
@@ -802,77 +762,6 @@ id="manufacturing"
       </div>
 
     </div>
-
-    {/* ===============================
-        INAUGURATION IMAGES
-    ================================ */}
-
-    {activeGallery === "inauguration" && (
-
-      <div id="gallery-images" className="gallery-images">
-
-        <img src="/gallery/inauguration/1.jpeg" alt="" />
-        <img src="/gallery/inauguration/2.jpeg" alt="" />
-        <img src="/gallery/inauguration/3.jpeg" alt="" />
-        <img src="/gallery/inauguration/4.jpeg" alt="" />
-        <img src="/gallery/inauguration/5.jpeg" alt="" />
-        <img src="/gallery/inauguration/6.jpeg" alt="" />
-
-      </div>
-
-    )}
-
-    {/* ===============================
-        PLANT IMAGES
-    ================================ */}
-
-    {activeGallery === "plant" && (
-
-      <div id="gallery-images" className="gallery-images">
-
-        <img src="/gallery/plant/1.png" alt="" />
-        <img src="/gallery/plant/2.png" alt="" />
-        <img src="/gallery/plant/3.jpg" alt="" />
-        <img src="/gallery/plant/4.png" alt="" />
-        <img src="/gallery/plant/5.png" alt="" />
-        <img src="/gallery/plant/6.png" alt="" />
-      </div>
-
-    )}
-
-    {/* ===============================
-        EVENT IMAGES
-    ================================ */}
-
-    {activeGallery === "events" && (
-
-      <div id="gallery-images" className="gallery-images">
-
-        <img src="/gallery/events/1.jpg" alt="" />
-        <img src="/gallery/events/2.jpg" alt="" />
-        <img src="/gallery/events/3.jpg" alt="" />
-
-      </div>
-
-    )}
-
-    {/* ===============================
-        SHG IMAGES
-    ================================ */}
-
-    {activeGallery === "shg" && (
-
-      <div id="gallery-images" className="gallery-images">
-
-        <img src="/gallery/shg/1.jpg" alt="" />
-        <img src="/gallery/shg/2.jpeg" alt="" />
-        <img src="/gallery/shg/3.jpeg" alt="" />
-        <img src="/gallery/shg/4.jpeg" alt="" />
-        <img src="/gallery/shg/5.jpeg" alt="" />
-        <img src="/gallery/shg/6.jpeg" alt="" />
-      </div>
-
-    )}
 
   </div>
 
@@ -917,7 +806,7 @@ id="manufacturing"
         >
 
           <img
-            src="/gallery/plant-tour.png"
+            src="/gallery/plant-tour.webp"
             alt="Official Project Video"
           />
 
@@ -950,7 +839,7 @@ id="manufacturing"
         >
 
           <img
-            src="/gallery/vlog-thumbnail.png"
+            src="/gallery/vlog-thumbnail.webp"
             alt="Factory Tour by Local Creator"
           />
 
@@ -1206,26 +1095,14 @@ id="manufacturing"
 
     <div className="footer-contact">
 
-      <span>📞 +91 99900 15636</span>
+      <span>📞 +91 99900 15363</span>
 
-      <span>✉ himalayngreenfuel@gmail.com</span>
+      <span>✉ himalayangreenfuel@gmail.com</span>
 
       <span>
         📍 Gram Bamnigaad, Someshwar, Almora,
         Uttarakhand – 263638
       </span>
-
-    </div>
-
-    <div className="footer-social">
-
-      <a href="#">Facebook</a>
-
-      <a href="#">Instagram</a>
-
-      <a href="#">LinkedIn</a>
-
-      <a href="#">YouTube</a>
 
     </div>
 
