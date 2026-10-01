@@ -1,16 +1,23 @@
-# React + Vite
+# Himalayan Green Fuel LLP — Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Source for [himalayangreenfuel.com](https://himalayangreenfuel.com/), the website of Himalayan Green Fuel LLP, a pine needle biomass pellet manufacturer in Someshwar, Almora, Uttarakhand.
 
-Currently, two official plugins are available:
+Built with React and Vite.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Development
 
-## React Compiler
+```bash
+npm install
+npm run dev      # local dev server
+npm run lint     # ESLint
+npm run build    # production build in dist/
+npm run preview  # serve the production build
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Images
 
-## Expanding the ESLint configuration
+Site images live in `public/gallery/`. Prefer compressed WebP or JPEG around 1600–1920px wide; large PNG photos make the page slow to load on mobile networks.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Deployment
+
+The site is hosted on GitHub Pages at the custom domain in `public/CNAME`. Every push to `main` builds and deploys it through `.github/workflows/deploy-pages.yml`; it can also be run by hand from the Actions tab.

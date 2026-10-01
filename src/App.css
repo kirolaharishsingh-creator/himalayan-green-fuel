@@ -258,7 +258,7 @@ MOBILE
 
     position:relative;
 
-    background:url("/gallery/1.png") center center/cover no-repeat;
+    background:url("/gallery/1.webp") center center/cover no-repeat;
 
     min-height:450px;
 
@@ -929,7 +929,7 @@ ESG SECTION
 
 .esg-layout{
     display:grid;
-    grid-template-columns:58% 42%;
+    grid-template-columns:minmax(0,58fr) minmax(0,42fr);
     gap:65px;
     align-items:center;
 }
@@ -1304,7 +1304,7 @@ RIGHT SHOWCASE
     position:absolute;
     inset:0;
 
-    background:url('/gallery/pellet-product.png')
+    background:url('/gallery/pellet-product.webp')
     center center / cover no-repeat;
 
     opacity:.15; /* adjust 0.05 - 0.12 */
@@ -1554,7 +1554,7 @@ RIGHT SHOWCASE
     position:absolute;
     inset:0;
 
-    background:url("/gallery/1.png")
+    background:url("/gallery/1.webp")
     center center/cover no-repeat;
 
     opacity:.04;
@@ -1876,7 +1876,7 @@ font-size:15px;
 
     display:grid;
 
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(3,1fr);
 
     gap:30px;
 
@@ -2004,7 +2004,7 @@ font-size:15px;
 
 .gallery-folders{
 
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(3,1fr);
 
 }
 
@@ -2100,7 +2100,7 @@ position:absolute;
 
 inset:0;
 
-background:url("/gallery/5.png")
+background:url("/gallery/5.webp")
 center center/cover no-repeat;
 
 opacity:.03;
@@ -2852,34 +2852,6 @@ color:#d8d8d8;
 font-size:15px;
 
 line-height:1.7;
-
-}
-
-.footer-social{
-
-display:flex;
-
-justify-content:center;
-
-gap:30px;
-
-margin-bottom:35px;
-
-}
-
-.footer-social a{
-
-text-decoration:none;
-
-color:#fff;
-
-transition:.3s;
-
-}
-
-.footer-social a:hover{
-
-color:#8BD16A;
 
 }
 
