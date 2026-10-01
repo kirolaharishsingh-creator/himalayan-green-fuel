@@ -28,7 +28,7 @@ function App() {
       id: "01",
       title: "Collection",
       icon: <Trees size={28} />,
-      image: "/gallery/collection.webp",
+      image: "gallery/collection.webp",
       description:
         "Pine needles are sustainably collected from nearby forests by local Self Help Groups."
     },
@@ -37,7 +37,7 @@ function App() {
       id: "02",
       title: "Transportation",
       icon: <Truck size={28} />,
-      image: "/gallery/transport.webp",
+      image: "gallery/transport.webp",
       description:
         "Collected pine needles are transported to our manufacturing facility."
     },
@@ -46,7 +46,7 @@ function App() {
       id: "03",
       title: "Cleaning & Drying",
       icon: <Factory size={28} />,
-      image: "/gallery/cleaning.webp",
+      image: "gallery/cleaning.webp",
       description:
         "Raw material is cleaned and dried before pellet production."
     },
@@ -55,7 +55,7 @@ function App() {
       id: "04",
       title: "Pellet Manufacturing",
       icon: <Cog size={28} />,
-      image: "/gallery/3.webp",
+      image: "gallery/3.webp",
       description:
         "Biomass is compressed into high-density pellets."
     },
@@ -64,7 +64,7 @@ function App() {
       id: "05",
       title: "Quality Testing",
       icon: <BadgeCheck size={28} />,
-      image: "/gallery/testing.jpeg",
+      image: "gallery/testing.jpeg",
       description:
         "Each batch is tested before dispatch."
     },
@@ -73,7 +73,7 @@ function App() {
       id: "06",
       title: "Clean Energy",
       icon: <Flame size={28} />,
-      image: "/gallery/pelletizing.webp",
+      image: "gallery/pelletizing.webp",
       description:
         "Finished pellets replace coal and fossil fuels."
     }
@@ -87,30 +87,30 @@ function App() {
   const galleries = {
 
   inauguration: [
-    "/gallery/inauguration/1.jpeg",
-    "/gallery/inauguration/2.jpeg",
-    "/gallery/inauguration/3.jpeg",
-    "/gallery/inauguration/4.jpeg",
-    "/gallery/inauguration/5.jpeg",
-    "/gallery/inauguration/6.jpeg",
+    "gallery/inauguration/1.jpeg",
+    "gallery/inauguration/2.jpeg",
+    "gallery/inauguration/3.jpeg",
+    "gallery/inauguration/4.jpeg",
+    "gallery/inauguration/5.jpeg",
+    "gallery/inauguration/6.jpeg",
   ],
 
   plant: [
-    "/gallery/plant/1.webp",
-    "/gallery/plant/2.webp",
-    "/gallery/plant/3.jpg",
-    "/gallery/plant/4.webp",
-    "/gallery/plant/5.webp",
-    "/gallery/plant/6.webp",
+    "gallery/plant/1.webp",
+    "gallery/plant/2.webp",
+    "gallery/plant/3.jpg",
+    "gallery/plant/4.webp",
+    "gallery/plant/5.webp",
+    "gallery/plant/6.webp",
   ],
 
   shg: [
-    "/gallery/shg/1.jpg",
-    "/gallery/shg/2.jpeg",
-    "/gallery/shg/3.jpeg",
-    "/gallery/shg/4.jpeg",
-    "/gallery/shg/5.jpeg",
-    "/gallery/shg/6.jpeg",
+    "gallery/shg/1.jpg",
+    "gallery/shg/2.jpeg",
+    "gallery/shg/3.jpeg",
+    "gallery/shg/4.jpeg",
+    "gallery/shg/5.jpeg",
+    "gallery/shg/6.jpeg",
   ]
 
 };
@@ -181,7 +181,7 @@ return (
 >
 
   <img
-    src="/logo.png"
+    src="logo.png"
     alt="Himalayan Green Fuel"
     className="header-logo"
   />
@@ -356,7 +356,7 @@ return (
 
     <div className="about-bg">
           <img
-            src="/gallery/5.webp"
+            src="gallery/5.webp"
             alt="Factory"
           />
         </div>
@@ -365,7 +365,7 @@ return (
 
       <div className="about-image">
         <img
-          src="/gallery/machine.webp"
+          src="gallery/machine.webp"
           alt="Biomass Pellet Plant"
         />
       </div>
@@ -493,7 +493,7 @@ return (
       <div className="esg-showcase">
 
         <img
-          src="/gallery/6.jpg"
+          src="gallery/6.jpg"
           alt="Environmental Impact"
           className="esg-bg"
         />
@@ -543,7 +543,7 @@ return (
 
       <div className="product-image">
         <img
-          src="/gallery/pine-needle-bg.webp"
+          src="gallery/pine-needle-bg.webp"
           alt="Pine Needle Biomass Pellets"
         />
       </div>
@@ -806,7 +806,7 @@ id="manufacturing"
         >
 
           <img
-            src="/gallery/plant-tour.webp"
+            src="gallery/plant-tour.webp"
             alt="Official Project Video"
           />
 
@@ -839,7 +839,7 @@ id="manufacturing"
         >
 
           <img
-            src="/gallery/vlog-thumbnail.webp"
+            src="gallery/vlog-thumbnail.webp"
             alt="Factory Tour by Local Creator"
           />
 
@@ -1063,7 +1063,7 @@ id="manufacturing"
   <div className="container">
 
     <img
-      src="/logo.png"
+      src="logo.png"
       alt="Himalayan Green Fuel"
       className="footer-logo"
     />
