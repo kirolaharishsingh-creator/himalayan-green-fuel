@@ -17,3 +17,7 @@ npm run preview  # serve the production build
 ## Images
 
 Site images live in `public/gallery/`. Prefer compressed WebP or JPEG around 1600–1920px wide; large PNG photos make the page slow to load on mobile networks.
+
+## Deployment
+
+The site is hosted on GitHub Pages at the custom domain in `public/CNAME`. Every push to `main` builds and deploys it through `.github/workflows/deploy-pages.yml`; it can also be run by hand from the Actions tab.
