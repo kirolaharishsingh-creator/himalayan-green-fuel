@@ -3402,3 +3402,27 @@ section[id]{
         white-space:nowrap;
     }
 }
+
+/* ==========================================
+   VIDEO POPUP: always fit inside the window
+   (it was sized by width only, so on wide-but-short laptop screens it
+   was taller than the window and the close button went off-screen)
+========================================== */
+
+.video-content{
+    width:min(92vw, 1400px, calc(85vh * 16 / 9));
+    max-width:none;
+    height:auto;
+    aspect-ratio:16/9;
+}
+
+/* ==========================================
+   SMALL LAPTOPS (993–1200px): highlight cards two per row
+   (four per row was too narrow, so the last card ran off-screen)
+========================================== */
+
+@media(min-width:993px) and (max-width:1200px){
+    .stats-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
