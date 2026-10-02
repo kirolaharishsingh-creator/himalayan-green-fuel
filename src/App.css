@@ -1777,11 +1777,19 @@ OVERLAY
 
 .process-overlay span{
 
+    display:inline-block;
+
+    padding:6px 14px;
+
+    border-radius:999px;
+
+    background:#2E7D32;
+
     font-size:13px;
 
     letter-spacing:3px;
 
-    color:#8BC34A;
+    color:#fff;
 
     font-weight:700;
 }
@@ -3326,6 +3334,24 @@ section[id]{
     }
 
     .esg-tag{
+        letter-spacing:2px;
+    }
+}
+
+/* phones: slightly smaller step label, stronger shading so white text reads on light photos */
+@media(max-width:768px){
+    .process-overlay{
+        background:linear-gradient(
+            to top,
+            rgba(0,0,0,.88),
+            rgba(0,0,0,.6) 60%,
+            rgba(0,0,0,.15)
+        );
+    }
+
+    .process-overlay span{
+        padding:5px 12px;
+        font-size:12px;
         letter-spacing:2px;
     }
 }
