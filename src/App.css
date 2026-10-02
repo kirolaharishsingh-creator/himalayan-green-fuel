@@ -3426,3 +3426,59 @@ section[id]{
         grid-template-columns:repeat(2,1fr);
     }
 }
+
+/* ==========================================
+   PRODUCT SPECIFICATIONS: one row under the photo and text
+   (4 across on desktop, 2 x 2 on tablets and phones)
+========================================== */
+
+.product-section .product-spec-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    margin-top:50px;
+    padding:0 20px;
+}
+
+.product-section .product-spec-card h3{
+    font-size:clamp(28px, 2.6vw, 38px);
+    white-space:nowrap;
+}
+
+/* small laptops: four cards are narrower, so tighten them */
+@media(min-width:993px) and (max-width:1200px){
+    .product-section .product-spec-card{
+        padding:24px 14px;
+    }
+
+    .product-section .product-spec-card h3{
+        font-size:26px;
+    }
+}
+
+@media(max-width:992px){
+    .product-section .product-spec-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        margin-top:40px;
+    }
+}
+
+@media(max-width:480px){
+    .product-section .product-spec-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:12px;
+        margin-top:30px;
+    }
+
+    .product-section .product-spec-card{
+        padding:20px 12px;
+    }
+
+    .product-section .product-spec-card h3{
+        font-size:clamp(18px, 5.6vw, 24px);
+        letter-spacing:-0.3px;
+    }
+
+    .product-section .product-spec-card span{
+        font-size:13px;
+    }
+}
+
