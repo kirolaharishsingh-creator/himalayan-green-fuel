@@ -3681,3 +3681,96 @@ section[id]{
     }
 }
 
+/* ==========================================
+   PROCESS ON DESKTOP: fill the laptop window when "Process" is clicked,
+   with heading, all six steps and the step photo visible
+   (same approach as About, Impact and Product)
+========================================== */
+
+@media(min-width:993px){
+    .process-section{
+        padding:28px 0;
+        min-height:min(calc(100vh - 61px), 820px);
+        display:flex;
+        align-items:center;
+    }
+
+    .process-section > .container{
+        width:100%;
+    }
+
+    .process-section .section-heading{
+        margin-bottom:0;
+    }
+
+    .process-section .section-tag{
+        padding:9px 20px;
+        margin-bottom:12px;
+    }
+
+    .process-section .section-title{
+        font-size:clamp(32px, 2.8vw, 44px);
+        margin-bottom:6px;
+    }
+
+    .process-subtitle{
+        font-size:16px;
+        margin-top:0;
+    }
+
+    .process-navigation{
+        margin:18px 0 20px;
+        flex-wrap:nowrap;
+    }
+
+    /* six steps share one row at every desktop width */
+    .process-item{
+        width:auto;
+        flex:1 1 0;
+        min-width:0;
+    }
+
+    .process-text h4{
+        font-size:clamp(13px, 1.15vw, 16px);
+    }
+
+    .process-icon{
+        width:60px;
+        height:60px;
+    }
+
+    .process-icon svg{
+        width:24px;
+        height:24px;
+    }
+
+    .process-number{
+        margin-top:10px;
+        margin-bottom:2px;
+    }
+
+    .process-showcase{
+        margin-top:0;
+    }
+
+    /* the step photo takes whatever height is left in the window */
+    .process-image img{
+        height:clamp(240px, calc(100vh - 61px - 56px - 300px), 450px);
+    }
+
+    .process-overlay{
+        padding:24px 32px;
+    }
+
+    .process-overlay h3{
+        font-size:28px;
+        margin-top:8px;
+        margin-bottom:8px;
+    }
+
+    .process-overlay p{
+        font-size:16px;
+        line-height:1.6;
+    }
+}
+
