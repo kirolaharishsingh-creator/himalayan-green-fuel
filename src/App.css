@@ -3210,6 +3210,41 @@ section[id]{
 
 @media(max-width:768px){
 
+    /* gallery folders: compact tappable rows instead of tall cards */
+    .gallery-folders{
+        gap:12px;
+        margin-top:35px;
+        padding:0;
+    }
+
+    .gallery-folder{
+        display:flex;
+        align-items:center;
+        gap:16px;
+        padding:14px 18px;
+        border-radius:16px;
+        text-align:left;
+    }
+
+    .gallery-folder .folder-icon{
+        font-size:30px;
+        line-height:1;
+        margin:0;
+    }
+
+    .gallery-folder h3{
+        flex:1;
+        margin:0;
+        font-size:18px;
+    }
+
+    .gallery-folder::after{
+        content:"›";
+        font-size:28px;
+        line-height:1;
+        color:#2E7D32;
+    }
+
     /* map section had no side spacing on phones */
     .map-section{
         padding:70px 20px;
