@@ -3860,3 +3860,53 @@ section[id]{
     }
 }
 
+/* ==========================================
+   LOCATION ON DESKTOP: fill the laptop window, with the heading, the
+   whole map and the Get Directions button visible
+   (same approach as the other sections)
+========================================== */
+
+@media(min-width:993px){
+    .map-section{
+        padding:28px 0;
+        min-height:min(calc(100vh - 61px), 820px);
+        display:flex;
+        align-items:center;
+    }
+
+    .map-section > .container{
+        width:100%;
+    }
+
+    .map-section .section-heading{
+        margin-bottom:0;
+    }
+
+    .map-section .section-tag{
+        padding:9px 20px;
+        margin-bottom:12px;
+    }
+
+    .map-section .section-title{
+        font-size:clamp(32px, 2.8vw, 44px);
+        margin-bottom:0;
+    }
+
+    .map-wrapper{
+        margin-top:24px;
+    }
+
+    /* the map takes whatever height is left in the window */
+    .map-wrapper iframe{
+        height:clamp(260px, calc(100vh - 61px - 56px - 200px), 500px);
+    }
+
+    .map-directions{
+        margin-top:18px;
+    }
+
+    .directions-btn{
+        padding:12px 32px;
+    }
+}
+
