@@ -3443,6 +3443,37 @@ section[id]{
     white-space:nowrap;
 }
 
+/* desktop: compact enough that photo, text and all four cards fit on a
+   laptop screen when "Product" is clicked in the menu */
+@media(min-width:1025px){
+    .product-section{
+        padding:40px 0 50px;
+    }
+
+    .product-content h2{
+        font-size:clamp(32px, 3vw, 44px);
+        margin-bottom:14px;
+    }
+
+    .product-content p{
+        line-height:1.75;
+        margin-bottom:0;
+    }
+
+    .product-image img{
+        max-height:360px;
+        object-fit:cover;
+    }
+
+    .product-section .product-spec-grid{
+        margin-top:32px;
+    }
+
+    .product-section .product-spec-card{
+        padding:20px;
+    }
+}
+
 /* small laptops: four cards are narrower, so tighten them */
 @media(min-width:993px) and (max-width:1200px){
     .product-section .product-spec-card{
