@@ -3253,6 +3253,11 @@ section[id]{
         color:#2E7D32;
     }
 
+    /* header: logo and menu button sat flush against the screen edges */
+    .header .container{
+        padding:0 14px;
+    }
+
     /* map section had no side spacing on phones */
     .map-section{
         padding:70px 20px;
@@ -3356,3 +3361,44 @@ section[id]{
     }
 }
 
+
+/* ==========================================
+   SMALL PHONES (e.g. iPhone SE, 320px)
+   Keep the menu button on the same line as the logo and name,
+   and keep the highlight figures (e.g. "1.5 TPH") on one line.
+========================================== */
+
+@media(max-width:380px){
+    .header-wrapper{
+        flex-wrap:nowrap;
+        gap:10px;
+    }
+
+    .header-brand{
+        gap:10px;
+        min-width:0;
+    }
+
+    .header-logo{
+        width:40px;
+    }
+
+    .header-info h2{
+        font-size:15px;
+    }
+
+    .stat-card{
+        padding:20px;
+        gap:14px;
+    }
+
+    .stat-icon{
+        width:56px;
+        height:56px;
+    }
+
+    .stat-content h3{
+        font-size:30px;
+        white-space:nowrap;
+    }
+}
