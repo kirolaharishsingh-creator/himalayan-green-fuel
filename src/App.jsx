@@ -949,7 +949,7 @@ id="manufacturing"
           <h3>☎ Call Us</h3>
 
           <p>
-            +91 99900 15363
+            <a href="tel:+919990015363">+91 99900 15363</a>
           </p>
 
         </div>
@@ -959,7 +959,7 @@ id="manufacturing"
           <h3>✉ Email</h3>
 
           <p>
-            himalayangreenfuel@gmail.com
+            <a href="mailto:himalayangreenfuel@gmail.com">himalayangreenfuel@gmail.com</a>
           </p>
 
         </div>
@@ -1109,9 +1109,9 @@ id="manufacturing"
 
     <div className="footer-contact">
 
-      <span>📞 +91 99900 15363</span>
+      <a href="tel:+919990015363">📞 +91 99900 15363</a>
 
-      <span>✉ himalayangreenfuel@gmail.com</span>
+      <a href="mailto:himalayangreenfuel@gmail.com">✉ himalayangreenfuel@gmail.com</a>
 
       <span>
         📍 Gram Bamnigaad, Someshwar, Almora,
