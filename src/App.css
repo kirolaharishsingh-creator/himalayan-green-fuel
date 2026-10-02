@@ -3523,3 +3523,48 @@ section[id]{
     }
 }
 
+/* ==========================================
+   ABOUT ON DESKTOP: fill the laptop window when "About" is clicked,
+   with the photo and text card centred and fully visible
+   (same approach as the Product section)
+========================================== */
+
+@media(min-width:993px){
+    .about-section{
+        padding:40px 0 50px;
+        min-height:min(calc(100vh - 61px), 820px);
+        display:flex;
+        align-items:center;
+    }
+
+    .about-section > .container{
+        width:100%;
+    }
+
+    .about-layout{
+        align-items:center;
+    }
+
+    .about-content{
+        padding:28px 36px;
+    }
+
+    .about-content h2{
+        font-size:clamp(30px, 2.8vw, 42px);
+    }
+
+    .about-line{
+        margin-bottom:20px;
+    }
+
+    .about-content p{
+        font-size:17px;
+        line-height:1.7;
+        margin-bottom:14px;
+    }
+
+    .about-content p:last-child{
+        margin-bottom:0;
+    }
+}
+
