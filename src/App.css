@@ -3568,3 +3568,116 @@ section[id]{
     }
 }
 
+/* ==========================================
+   IMPACT (ESG) ON DESKTOP: fill the laptop window, everything visible
+   (same approach as About and Product)
+========================================== */
+
+@media(min-width:993px){
+    .esg-section{
+        padding:30px 0;
+        min-height:min(calc(100vh - 61px), 820px);
+        display:flex;
+        align-items:center;
+    }
+
+    .esg-section > .container{
+        width:100%;
+    }
+
+    /* photo card takes the height of the cards beside it */
+    .esg-layout{
+        align-items:stretch;
+    }
+
+    .esg-showcase{
+        min-height:0;
+        height:auto;
+    }
+
+    /* photo card: heading at the top, paragraph at the bottom, and the
+       Self Help Group photo visible in between */
+    .esg-showcase img{
+        width:100%;
+        height:100%;
+        transform:none;
+        object-position:center 48%;
+    }
+
+    .esg-overlay{
+        height:48%;
+    }
+
+    .esg-content{
+        top:28px;
+        bottom:24px;
+        left:28px;
+        right:28px;
+        max-width:none;
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .esg-tag{
+        margin-bottom:14px;
+        padding:9px 16px;
+    }
+
+    .esg-content h2{
+        font-size:clamp(24px, 2.1vw, 32px);
+        margin-bottom:0;
+    }
+
+    .esg-line{
+        margin-top:12px;
+    }
+
+    .esg-content p{
+        margin-top:auto;
+        max-width:none;
+        font-size:14px;
+        line-height:1.5;
+        padding:12px 16px;
+    }
+
+    /* impact cards: shorter */
+    .esg-cards{
+        gap:16px;
+    }
+
+    .esg-card{
+        min-height:0;
+        padding:18px 20px;
+        gap:16px;
+    }
+
+    .esg-card .icon-circle{
+        width:56px;
+        height:56px;
+    }
+
+    .esg-card .icon-circle svg{
+        width:28px;
+        height:28px;
+    }
+
+    .esg-card-content{
+        padding-left:16px;
+    }
+
+    .esg-card-content h3{
+        font-size:17px;
+        margin-bottom:8px;
+    }
+
+    .esg-card-content span{
+        margin-bottom:10px;
+    }
+
+    .esg-card-content p{
+        font-size:14.5px;
+        line-height:1.6;
+    }
+}
+
