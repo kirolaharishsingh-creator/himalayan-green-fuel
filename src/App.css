@@ -2425,7 +2425,7 @@ height:260px;
 }
 
 .plant-video-card img{
-    height:240px;
+    height:auto;
 }
 
 .plant-overlay h3{
@@ -3179,6 +3179,48 @@ section[id]{
         margin-right:auto;
         padding-left:40px;
         padding-right:40px;
+    }
+}
+
+/* ==========================================
+   TAP-TO-CALL / TAP-TO-EMAIL LINKS
+========================================== */
+
+.contact-card p a{
+    color:inherit;
+    text-decoration:none;
+}
+
+.contact-card p a:hover{
+    color:#2E7D32;
+}
+
+.footer-contact a{
+    color:inherit;
+    text-decoration:none;
+}
+
+.footer-contact a:hover{
+    color:#8BD16A;
+}
+
+/* ==========================================
+   PHONES
+========================================== */
+
+@media(max-width:768px){
+
+    /* map section had no side spacing on phones */
+    .map-section{
+        padding:70px 20px;
+    }
+
+    /* bigger tap targets for footer links */
+    .footer-nav a,
+    .footer-contact a,
+    .contact-card p a{
+        display:inline-block;
+        padding:10px 4px;
     }
 }
 
