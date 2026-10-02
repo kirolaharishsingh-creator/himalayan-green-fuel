@@ -571,30 +571,33 @@ return (
           energy applications.
         </p>
 
-        <div className="product-spec-grid">
 
-          <div className="product-spec-card">
-            <h3>4603</h3>
-            <span>Kcal/kg GCV</span>
-          </div>
+      </div>
 
-          <div className="product-spec-card">
-            <h3>5.3%</h3>
-            <span>Moisture Content</span>
-          </div>
+    </div>
 
-          <div className="product-spec-card">
-            <h3>3.1%</h3>
-            <span>Ash Content</span>
-          </div>
+    {/* SPECIFICATIONS */}
 
-          <div className="product-spec-card">
-            <h3>6mm & 8mm</h3>
-            <span>Available Sizes</span>
-          </div>
+    <div className="product-spec-grid">
 
-        </div>
+      <div className="product-spec-card">
+        <h3>4603</h3>
+        <span>Kcal/kg GCV</span>
+      </div>
 
+      <div className="product-spec-card">
+        <h3>5.3%</h3>
+        <span>Moisture Content</span>
+      </div>
+
+      <div className="product-spec-card">
+        <h3>3.1%</h3>
+        <span>Ash Content</span>
+      </div>
+
+      <div className="product-spec-card">
+        <h3>6mm & 8mm</h3>
+        <span>Available Sizes</span>
       </div>
 
     </div>
