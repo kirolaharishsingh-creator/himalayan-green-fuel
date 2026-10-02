@@ -3448,6 +3448,16 @@ section[id]{
 @media(min-width:1025px){
     .product-section{
         padding:40px 0 50px;
+        /* fill the window below the 61px menu bar, content centred,
+           so the next section doesn't peek in at the bottom on laptops;
+           capped so large monitors don't get big empty bands */
+        min-height:min(calc(100vh - 61px), 820px);
+        display:flex;
+        align-items:center;
+    }
+
+    .product-section > .container{
+        width:100%;
     }
 
     .product-content h2{
