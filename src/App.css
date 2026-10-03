@@ -4292,3 +4292,17 @@ section[id]{
         padding-top:36px;
     }
 }
+
+/* "Get a Pellet Quote" lands the inquiry form just below the menu bar */
+@media(max-width:992px){
+    #inquiry-form{
+        scroll-margin-top:157px;
+    }
+}
+
+@media(max-width:768px){
+    #inquiry-form{
+        scroll-margin-top:85px;
+    }
+}
+

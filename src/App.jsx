@@ -991,6 +991,7 @@ id="manufacturing"
       {/* RIGHT */}
 
       <form
+  id="inquiry-form"
   className="contact-form"
   onSubmit={handleContactSubmit}
 >
