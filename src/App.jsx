@@ -78,7 +78,8 @@ function App() {
       id: "05",
       title: "Quality Testing",
       icon: <BadgeCheck size={28} />,
-      image: "gallery/testing.jpeg",
+      image: "gallery/testing-report-wide.jpg",
+      mobileImage: "gallery/testing-report-tall.jpg",
       description:
         "Each batch is tested before dispatch."
     },
@@ -718,10 +719,18 @@ id="manufacturing"
 
       <div className="process-image">
 
-        <img
-          src={activeProcess.image}
-          alt={activeProcess.title}
-        />
+        <picture>
+          {activeProcess.mobileImage && (
+            <source
+              media="(max-width: 768px)"
+              srcSet={activeProcess.mobileImage}
+            />
+          )}
+          <img
+            src={activeProcess.image}
+            alt={activeProcess.title}
+          />
+        </picture>
 
         <div className="process-overlay">
 
