@@ -306,6 +306,12 @@ return (
 
 </section>
 
+{/* ===========================
+SAVINGS CALCULATOR
+=========================== */}
+
+<SavingsCalculator />
+
 <section className="stats">
 
   <div className="container">
@@ -372,12 +378,6 @@ return (
   </div>
 
 </section>
-
-{/* ===========================
-SAVINGS CALCULATOR
-=========================== */}
-
-<SavingsCalculator />
 
 <section id="about" className="about-section">
   <div className="container">
