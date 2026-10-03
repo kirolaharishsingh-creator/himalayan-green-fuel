@@ -10,13 +10,25 @@ import {
   Globe,
   Truck,
   Cog,
-  BadgeCheck
+  BadgeCheck,
+  MessageCircle
 } from "lucide-react";
 
 import { useState } from "react";
 
+import SavingsCalculator from "./SavingsCalculator";
+import useScrollReveal from "./useScrollReveal";
+
+const WHATSAPP_URL =
+  "https://wa.me/919990015363?text=" +
+  encodeURIComponent(
+    "Hello Himalayan Green Fuel, I'm interested in your pine needle biomass pellets."
+  );
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useScrollReveal();
 
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
@@ -211,6 +223,10 @@ return (
 
         <a href="#product" onClick={() => setMenuOpen(false)}>
           Product
+        </a>
+
+        <a href="#calculator" onClick={() => setMenuOpen(false)}>
+          Savings
         </a>
 
         <a href="#manufacturing" onClick={() => setMenuOpen(false)}>
@@ -606,6 +622,12 @@ return (
 
 
 </section>
+
+{/* ===========================
+SAVINGS CALCULATOR
+=========================== */}
+
+<SavingsCalculator />
 
 {/* ===========================
 MANUFACTURING PROCESS
@@ -1102,6 +1124,8 @@ id="manufacturing"
 
       <a href="#product">Product</a>
 
+      <a href="#calculator">Savings</a>
+
       <a href="#manufacturing">Process</a>
 
       <a href="#gallery">Gallery</a>
@@ -1193,6 +1217,21 @@ id="manufacturing"
 )}
 
 </footer>
+
+{/* ===========================
+WHATSAPP CHAT BUTTON
+=========================== */}
+
+<a
+  className="whatsapp-float"
+  href={WHATSAPP_URL}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Chat with us on WhatsApp"
+>
+  <MessageCircle size={28} strokeWidth={2.2} />
+  <span className="whatsapp-label">Chat on WhatsApp</span>
+</a>
 
     </>
   );
