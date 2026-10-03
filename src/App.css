@@ -3910,3 +3910,359 @@ section[id]{
     }
 }
 
+/* ==========================================
+   SAVINGS CALCULATOR
+========================================== */
+
+.calculator-section{
+    padding:70px 0;
+    background:#F7F8F4;
+}
+
+.calculator-subtitle{
+    max-width:640px;
+    margin:12px auto 0;
+    font-size:17px;
+    line-height:1.6;
+    color:#5c6470;
+}
+
+.calculator-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:28px;
+    margin-top:36px;
+    padding:0 20px;
+}
+
+.calculator-card{
+    background:#fff;
+    border-radius:24px;
+    padding:28px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+}
+
+.calculator-inputs h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:20px;
+    color:#2E7D32;
+    margin-bottom:18px;
+}
+
+.calc-fuel-options{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.calc-fuel{
+    padding:11px 8px;
+    border:2px solid #E8EFE8;
+    border-radius:999px;
+    background:#fff;
+    color:#2b3a2e;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .25s ease;
+}
+
+.calc-fuel:hover{
+    border-color:#2E7D32;
+}
+
+.calc-fuel.active{
+    background:#2E7D32;
+    border-color:#2E7D32;
+    color:#fff;
+}
+
+.calc-field{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    margin-bottom:16px;
+    min-width:0;
+}
+
+.calc-field span{
+    font-size:14px;
+    font-weight:600;
+    color:#4d5b68;
+}
+
+.calc-field em{
+    font-weight:400;
+    font-style:normal;
+    color:#8a949e;
+}
+
+.calc-field input{
+    width:100%;
+    padding:12px 16px;
+    border:1px solid #dfe5e0;
+    border-radius:12px;
+    font-size:16px;
+    font-family:inherit;
+}
+
+.calc-field input:focus{
+    outline:none;
+    border-color:#2E7D32;
+    box-shadow:0 0 0 3px rgba(46,125,50,.12);
+}
+
+.calc-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:14px;
+}
+
+.calc-row .calc-field{
+    margin-bottom:0;
+}
+
+.calculator-results{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.calc-result{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:14px 18px;
+    border-radius:16px;
+    background:#F1F5EF;
+    color:#2E7D32;
+}
+
+.calc-result > svg{
+    flex-shrink:0;
+}
+
+.calc-result strong{
+    display:block;
+    font-size:22px;
+    color:#2E7D32;
+    line-height:1.2;
+}
+
+.calc-result span{
+    display:block;
+    font-size:14px;
+    color:#5c6470;
+    line-height:1.45;
+}
+
+.calc-quote-btn{
+    display:block;
+    text-align:center;
+    padding:13px;
+    border-radius:999px;
+    background:#2E7D32;
+    color:#fff;
+    font-weight:600;
+    font-size:16px;
+    text-decoration:none;
+    transition:background .25s ease;
+}
+
+.calc-quote-btn:hover{
+    background:#1B5E20;
+}
+
+.calc-note{
+    font-size:12.5px;
+    line-height:1.5;
+    color:#8a949e;
+    margin:0;
+}
+
+/* desktop: fill the laptop window like the other sections */
+@media(min-width:993px){
+    .calculator-section{
+        padding:28px 0;
+        min-height:min(calc(100vh - 61px), 820px);
+        display:flex;
+        align-items:center;
+    }
+
+    .calculator-section > .container{
+        width:100%;
+    }
+
+    .calculator-section .section-heading{
+        margin-bottom:0;
+    }
+
+    .calculator-section .section-tag{
+        padding:9px 20px;
+        margin-bottom:12px;
+    }
+
+    .calculator-section .section-title{
+        font-size:clamp(32px, 2.8vw, 44px);
+        margin-bottom:0;
+    }
+
+    .calculator-subtitle{
+        font-size:16px;
+        margin-top:8px;
+        max-width:820px;
+    }
+
+    .calculator-layout{
+        margin-top:22px;
+    }
+
+    .calculator-card{
+        padding:22px 26px;
+    }
+
+    .calculator-inputs h3{
+        margin-bottom:14px;
+    }
+
+    .calc-fuel-options{
+        margin-bottom:16px;
+    }
+
+    .calc-field{
+        margin-bottom:14px;
+    }
+
+    .calculator-results{
+        gap:11px;
+    }
+
+    .calc-result{
+        padding:11px 16px;
+    }
+}
+
+/* tablets and phones: stack inputs above results */
+@media(max-width:992px){
+    .calculator-layout{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:768px){
+    .calculator-section{
+        padding:70px 20px;
+    }
+
+    .calculator-layout{
+        padding:0;
+        gap:18px;
+        margin-top:28px;
+    }
+
+    .calculator-card{
+        padding:22px 18px;
+        border-radius:20px;
+    }
+
+    .calculator-subtitle{
+        font-size:15px;
+    }
+
+    .calc-row{
+        grid-template-columns:1fr;
+        gap:0;
+    }
+
+    .calc-row .calc-field{
+        margin-bottom:16px;
+    }
+
+    .calc-row .calc-field:last-child{
+        margin-bottom:0;
+    }
+
+    .calc-fuel{
+        font-size:14px;
+        padding:10px 4px;
+    }
+
+    .calc-result strong{
+        font-size:19px;
+    }
+}
+
+/* ==========================================
+   WHATSAPP CHAT BUTTON
+   (sits below the menu bar, gallery and video popups)
+========================================== */
+
+.whatsapp-float{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    z-index:990;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px;
+    border-radius:999px;
+    background:#25D366;
+    color:#fff;
+    text-decoration:none;
+    font-weight:600;
+    font-size:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.2);
+    transition:transform .25s ease, box-shadow .25s ease;
+}
+
+.whatsapp-float:hover{
+    transform:translateY(-3px);
+    box-shadow:0 14px 30px rgba(0,0,0,.25);
+}
+
+.whatsapp-label{
+    padding-right:6px;
+}
+
+@media(max-width:768px){
+    .whatsapp-float{
+        right:16px;
+        bottom:16px;
+        padding:13px;
+    }
+
+    /* icon only on phones */
+    .whatsapp-label{
+        display:none;
+    }
+}
+
+/* ==========================================
+   SCROLL REVEAL (added by useScrollReveal)
+========================================== */
+
+.reveal{
+    opacity:0;
+    transform:translateY(28px);
+    transition:
+        opacity .7s ease var(--reveal-delay, 0ms),
+        transform .7s ease var(--reveal-delay, 0ms);
+}
+
+.reveal.revealed{
+    opacity:1;
+    transform:none;
+}
+
+@media (prefers-reduced-motion: reduce){
+    .reveal{
+        opacity:1;
+        transform:none;
+        transition:none;
+    }
+}
+
