@@ -22,6 +22,20 @@ const CO2_PER_TREE_PER_YEAR = 21; // kg
 const formatNumber = (n, digits = 1) =>
   n.toLocaleString("en-IN", { maximumFractionDigits: digits });
 
+// On phones and tablets the contact cards (address, phone, email) come
+// before the inquiry form, so jump straight to the form. On desktop the
+// form sits beside the cards, so the whole Contact section is shown.
+const goToInquiryForm = (e) => {
+  if (!window.matchMedia("(max-width: 992px)").matches) return;
+  const form = document.getElementById("inquiry-form");
+  if (!form) return;
+  e.preventDefault();
+  // show it in its final place first, so the scroll doesn't aim at the
+  // still-animating (shifted) position of the scroll-in animation
+  form.classList.remove("reveal", "revealed");
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
 function SavingsCalculator() {
   const [fuel, setFuel] = useState("coal");
   const [tonnes, setTonnes] = useState("10");
@@ -159,7 +173,11 @@ function SavingsCalculator() {
               </>
             )}
 
-            <a className="calc-quote-btn" href="#contact">
+            <a
+              className="calc-quote-btn"
+              href="#contact"
+              onClick={goToInquiryForm}
+            >
               Get a Pellet Quote
             </a>
 
