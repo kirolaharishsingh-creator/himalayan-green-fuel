@@ -3994,11 +3994,6 @@ section[id]{
     color:#4d5b68;
 }
 
-.calc-field em{
-    font-weight:400;
-    font-style:normal;
-    color:#8a949e;
-}
 
 .calc-field input{
     width:100%;
@@ -4015,15 +4010,6 @@ section[id]{
     box-shadow:0 0 0 3px rgba(46,125,50,.12);
 }
 
-.calc-row{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-    gap:14px;
-}
-
-.calc-row .calc-field{
-    margin-bottom:0;
-}
 
 .calculator-results{
     display:flex;
@@ -4172,18 +4158,6 @@ section[id]{
         font-size:15px;
     }
 
-    .calc-row{
-        grid-template-columns:1fr;
-        gap:0;
-    }
-
-    .calc-row .calc-field{
-        margin-bottom:16px;
-    }
-
-    .calc-row .calc-field:last-child{
-        margin-bottom:0;
-    }
 
     .calc-fuel{
         font-size:14px;
@@ -4266,10 +4240,36 @@ section[id]{
     }
 }
 
-.calc-price-hint{
-    margin:12px 0 0;
-    font-size:13px;
-    line-height:1.5;
-    color:#5c6470;
+/* CO2 calculator: inputs card keeps the pellets result at its bottom,
+   and the yearly CO2 figure is the headline */
+.calculator-inputs{
+    display:flex;
+    flex-direction:column;
+}
+
+.calculator-inputs .calc-result{
+    margin-top:auto;
+}
+
+.calc-result-main{
+    padding:20px 22px;
+    background:#2E7D32;
+    color:#fff;
+}
+
+.calc-result-main strong{
+    font-size:32px;
+    color:#fff;
+}
+
+.calc-result-main span{
+    color:rgba(255,255,255,.9);
+    font-size:15px;
+}
+
+@media(max-width:768px){
+    .calc-result-main strong{
+        font-size:26px;
+    }
 }
 

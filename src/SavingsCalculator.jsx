@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { Calculator, Leaf, Package, IndianRupee } from "lucide-react";
+import { Calculator, Leaf, Package, Trees } from "lucide-react";
 
 // Gross calorific value of our pellets (from the product spec sheet).
 const PELLET_GCV = 4603; // kcal/kg
 
-// Standard pellet price; wholesale and bulk orders are quoted separately.
-const STANDARD_PELLET_PRICE = 15; // ₹/kg
-
 // Typical values for the fuels industrial boilers in the region switch from.
 // CO2 is fossil CO2 only; firewood is biomass, so no fossil CO2 is counted.
 const FUELS = {
-  coal: { label: "Coal", gcv: 4000, co2PerKg: 1.59, examplePrice: 9 },
-  firewood: { label: "Firewood", gcv: 3500, co2PerKg: 0, examplePrice: 7 },
-  furnaceOil: { label: "Furnace oil", gcv: 10000, co2PerKg: 3.24, examplePrice: 45 },
+  coal: { label: "Coal", gcv: 4000, co2PerKg: 1.59 },
+  firewood: { label: "Firewood", gcv: 3500, co2PerKg: 0 },
+  furnaceOil: { label: "Furnace oil", gcv: 10000, co2PerKg: 3.24 },
 };
+
+// A mature tree absorbs roughly 21 kg of CO2 a year (commonly used estimate).
+const CO2_PER_TREE_PER_YEAR = 21; // kg
 
 const formatNumber = (n, digits = 1) =>
   n.toLocaleString("en-IN", { maximumFractionDigits: digits });
@@ -21,22 +21,15 @@ const formatNumber = (n, digits = 1) =>
 function SavingsCalculator() {
   const [fuel, setFuel] = useState("coal");
   const [tonnes, setTonnes] = useState("10");
-  const [fuelPrice, setFuelPrice] = useState("");
-  const [pelletPrice, setPelletPrice] = useState(String(STANDARD_PELLET_PRICE));
 
   const current = FUELS[fuel];
   const qty = Math.max(parseFloat(tonnes) || 0, 0);
 
   // Pellets needed to deliver the same heat.
   const pelletTonnes = (qty * current.gcv) / PELLET_GCV;
-  const co2Tonnes = qty * current.co2PerKg;
-
-  const fp = parseFloat(fuelPrice);
-  const pp = parseFloat(pelletPrice);
-  const hasPrices = fp > 0 && pp > 0;
-  const currentCost = qty * 1000 * fp;
-  const pelletCost = pelletTonnes * 1000 * pp;
-  const monthlySaving = currentCost - pelletCost;
+  const co2Month = qty * current.co2PerKg; // tonnes
+  const co2Year = co2Month * 12;
+  const treesEquivalent = (co2Year * 1000) / CO2_PER_TREE_PER_YEAR;
 
   return (
     <section id="calculator" className="calculator-section">
@@ -46,16 +39,16 @@ function SavingsCalculator() {
         <div className="section-heading">
 
           <div className="section-tag">
-            SAVINGS CALCULATOR
+            CO₂ SAVINGS CALCULATOR
           </div>
 
           <h2 className="section-title">
-            What Would Switching Save You?
+            How Much CO₂ Would You Save?
           </h2>
 
           <p className="calculator-subtitle">
-            Enter your current monthly fuel use to see how many pellets you
-            would need and how much CO₂ you would avoid.
+            Enter your current monthly fuel use to see the emissions you
+            would avoid by switching to pine needle pellets.
           </p>
 
         </div>
@@ -95,41 +88,13 @@ function SavingsCalculator() {
               />
             </label>
 
-            <div className="calc-row">
-
-              <label className="calc-field">
-                <span>{current.label} price (₹/kg) <em>optional</em></span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  inputMode="decimal"
-                  placeholder={`e.g. ${current.examplePrice}`}
-                  value={fuelPrice}
-                  onChange={(e) => setFuelPrice(e.target.value)}
-                />
-              </label>
-
-              <label className="calc-field">
-                <span>Pellet price (₹/kg)</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  inputMode="decimal"
-                  placeholder={String(STANDARD_PELLET_PRICE)}
-                  value={pelletPrice}
-                  onChange={(e) => setPelletPrice(e.target.value)}
-                />
-              </label>
-
+            <div className="calc-result">
+              <Package size={26} />
+              <div>
+                <strong>{formatNumber(pelletTonnes)} tonnes of pellets</strong>
+                <span>per month give the same heat</span>
+              </div>
             </div>
-
-            <p className="calc-price-hint">
-              Standard price ₹{STANDARD_PELLET_PRICE}/kg. Wholesale and bulk
-              orders are priced differently; ask us for a quote for your
-              quantity.
-            </p>
 
           </div>
 
@@ -137,76 +102,68 @@ function SavingsCalculator() {
 
           <div className="calculator-card calculator-results">
 
-            <div className="calc-result">
-              <Package size={26} />
-              <div>
-                <strong>{formatNumber(pelletTonnes)} tonnes</strong>
-                <span>of pellets per month give the same heat</span>
-              </div>
-            </div>
+            {current.co2PerKg > 0 ? (
+              <>
+                <div className="calc-result calc-result-main">
+                  <Leaf size={30} />
+                  <div>
+                    <strong>{formatNumber(co2Year, 0)} tonnes CO₂</strong>
+                    <span>
+                      of fossil emissions avoided every year
+                      ({formatNumber(co2Month)} tonnes a month)
+                    </span>
+                  </div>
+                </div>
 
-            <div className="calc-result">
-              <Leaf size={26} />
-              <div>
-                {current.co2PerKg > 0 ? (
-                  <>
-                    <strong>{formatNumber(co2Tonnes)} tonnes CO₂</strong>
+                <div className="calc-result">
+                  <Trees size={26} />
+                  <div>
+                    <strong>
+                      ≈ {formatNumber(treesEquivalent, 0)} trees
+                    </strong>
                     <span>
-                      of fossil emissions avoided per month
-                      ({formatNumber(co2Tonnes * 12, 0)} tonnes a year)
+                      would take a year to absorb that much CO₂
                     </span>
-                  </>
-                ) : (
-                  <>
-                    <strong>No trees cut</strong>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="calc-result calc-result-main">
+                  <Trees size={30} />
+                  <div>
+                    <strong>
+                      {formatNumber(qty * 12, 0)} tonnes of firewood
+                    </strong>
                     <span>
-                      pellets are made from fallen pine needles, so no
-                      firewood is taken from the forest
+                      a year no longer cut from forests: pellets are made
+                      from fallen pine needles
                     </span>
-                  </>
-                )}
-              </div>
-            </div>
+                  </div>
+                </div>
 
-            <div className="calc-result">
-              <IndianRupee size={26} />
-              <div>
-                {hasPrices ? (
-                  monthlySaving >= 0 ? (
-                    <>
-                      <strong>₹{formatNumber(monthlySaving, 0)} saved</strong>
-                      <span>
-                        per month (₹{formatNumber(monthlySaving * 12, 0)} a year)
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <strong>₹{formatNumber(-monthlySaving, 0)} more</strong>
-                      <span>
-                        per month, in exchange for cleaner, low-ash fuel
-                      </span>
-                    </>
-                  )
-                ) : (
-                  <>
-                    <strong>Cost comparison</strong>
+                <div className="calc-result">
+                  <Leaf size={26} />
+                  <div>
+                    <strong>Lower forest fire risk</strong>
                     <span>
-                      add your current {current.label.toLowerCase()} price
-                      above to compare monthly costs
+                      collecting dry pine needles removes fuel from the
+                      forest floor
                     </span>
-                  </>
-                )}
-              </div>
-            </div>
+                  </div>
+                </div>
+              </>
+            )}
 
             <a className="calc-quote-btn" href="#contact">
               Get a Pellet Quote
             </a>
 
             <p className="calc-note">
-              Estimates based on typical calorific values ({current.label.toLowerCase()} ≈{" "}
+              Estimates based on typical values ({current.label.toLowerCase()} ≈{" "}
               {formatNumber(current.gcv, 0)} kcal/kg, our pellets{" "}
-              {formatNumber(PELLET_GCV, 0)} kcal/kg). Actual results depend
+              {formatNumber(PELLET_GCV, 0)} kcal/kg; a tree absorbs ≈{" "}
+              {CO2_PER_TREE_PER_YEAR} kg CO₂ a year). Actual results depend
               on your boiler and fuel quality.
             </p>
 
