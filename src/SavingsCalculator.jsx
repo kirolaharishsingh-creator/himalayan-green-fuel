@@ -4,6 +4,9 @@ import { Calculator, Leaf, Package, IndianRupee } from "lucide-react";
 // Gross calorific value of our pellets (from the product spec sheet).
 const PELLET_GCV = 4603; // kcal/kg
 
+// Standard pellet price; wholesale and bulk orders are quoted separately.
+const STANDARD_PELLET_PRICE = 15; // ₹/kg
+
 // Typical values for the fuels industrial boilers in the region switch from.
 // CO2 is fossil CO2 only; firewood is biomass, so no fossil CO2 is counted.
 const FUELS = {
@@ -19,7 +22,7 @@ function SavingsCalculator() {
   const [fuel, setFuel] = useState("coal");
   const [tonnes, setTonnes] = useState("10");
   const [fuelPrice, setFuelPrice] = useState("");
-  const [pelletPrice, setPelletPrice] = useState("");
+  const [pelletPrice, setPelletPrice] = useState(String(STANDARD_PELLET_PRICE));
 
   const current = FUELS[fuel];
   const qty = Math.max(parseFloat(tonnes) || 0, 0);
@@ -108,19 +111,25 @@ function SavingsCalculator() {
               </label>
 
               <label className="calc-field">
-                <span>Pellet price (₹/kg) <em>optional</em></span>
+                <span>Pellet price (₹/kg)</span>
                 <input
                   type="number"
                   min="0"
                   step="0.5"
                   inputMode="decimal"
-                  placeholder="from your quote"
+                  placeholder={String(STANDARD_PELLET_PRICE)}
                   value={pelletPrice}
                   onChange={(e) => setPelletPrice(e.target.value)}
                 />
               </label>
 
             </div>
+
+            <p className="calc-price-hint">
+              Standard price ₹{STANDARD_PELLET_PRICE}/kg. Wholesale and bulk
+              orders are priced differently; ask us for a quote for your
+              quantity.
+            </p>
 
           </div>
 
@@ -182,7 +191,8 @@ function SavingsCalculator() {
                   <>
                     <strong>Cost comparison</strong>
                     <span>
-                      add both prices above, or ask us for a pellet quote
+                      add your current {current.label.toLowerCase()} price
+                      above to compare monthly costs
                     </span>
                   </>
                 )}
