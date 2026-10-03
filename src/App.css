@@ -4306,3 +4306,311 @@ section[id]{
     }
 }
 
+
+/* ==========================================
+   CALCULATOR: share result on WhatsApp
+========================================== */
+
+.calc-share-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:11px;
+    border:2px solid #25D366;
+    border-radius:999px;
+    color:#128C4A;
+    font-weight:600;
+    font-size:15px;
+    text-decoration:none;
+    transition:all .25s ease;
+}
+
+.calc-share-btn:hover{
+    background:#25D366;
+    color:#fff;
+}
+
+@media(min-width:993px){
+    .calc-share-btn{
+        padding:9px;
+    }
+}
+
+/* ==========================================
+   PRODUCT: five spec cards and the lab-tested badge
+========================================== */
+
+.product-section .product-spec-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+}
+
+/* desktop: five cards in one row, sized so "6mm & 8mm" fits */
+@media(min-width:993px){
+    .product-section .product-spec-grid{
+        margin-top:24px;
+        gap:16px;
+    }
+
+    .product-section .product-spec-card{
+        padding:16px 12px;
+    }
+
+    .product-section .product-spec-card h3{
+        font-size:clamp(20px, 1.9vw, 30px);
+        margin-bottom:4px;
+    }
+
+    /* keep photo + text + cards + badge within a laptop screen */
+    .product-image img{
+        max-height:320px;
+    }
+
+    .product-content h2{
+        font-size:clamp(30px, 2.6vw, 40px);
+    }
+
+    .product-content p{
+        font-size:16px;
+        line-height:1.7;
+    }
+
+    .lab-badge{
+        margin-top:14px;
+        padding:9px 16px;
+    }
+}
+
+@media(min-width:993px) and (max-width:1200px){
+    .product-section .product-spec-card h3{
+        font-size:21px;
+    }
+
+    .product-section .product-spec-card span{
+        font-size:13px;
+    }
+}
+
+@media(max-width:992px){
+    .product-section .product-spec-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    /* fifth card spans the row */
+    .product-section .product-spec-card:last-child{
+        grid-column:1 / -1;
+    }
+}
+
+.lab-badge{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:16px 20px 0;
+    padding:12px 18px;
+    border-radius:14px;
+    background:rgba(255,255,255,.85);
+    border:1px solid #dce8d8;
+    color:#2E7D32;
+}
+
+.lab-badge svg{
+    flex-shrink:0;
+}
+
+.lab-badge p{
+    margin:0;
+    font-size:14px;
+    line-height:1.5;
+    color:#4d5b68;
+}
+
+.lab-badge strong{
+    color:#2E7D32;
+}
+
+@media(max-width:768px){
+    .lab-badge{
+        margin:16px 0 0;
+        align-items:flex-start;
+    }
+
+    .lab-badge p{
+        font-size:13px;
+    }
+}
+
+/* ==========================================
+   FUEL COMPARISON
+========================================== */
+
+.compare-section{
+    padding:70px 0;
+    background:#F7F8F4;
+}
+
+.compare-table-wrap{
+    margin-top:30px;
+    padding:0 20px;
+}
+
+.compare-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+    font-size:16px;
+}
+
+.compare-table th,
+.compare-table td{
+    padding:14px 18px;
+    text-align:center;
+    border-bottom:1px solid #edf1ec;
+}
+
+.compare-table tbody tr:last-child th,
+.compare-table tbody tr:last-child td{
+    border-bottom:none;
+}
+
+.compare-table thead th{
+    font-size:16px;
+    font-weight:700;
+    color:#2b3a2e;
+    background:#F1F5EF;
+}
+
+.compare-table tbody th{
+    text-align:left;
+    font-weight:600;
+    color:#4d5b68;
+    width:30%;
+}
+
+.compare-table td{
+    color:#4d5b68;
+}
+
+/* our pellets column stands out */
+.compare-table .cmp-ours{
+    background:#E8F3E6;
+    color:#1B5E20;
+    font-weight:700;
+}
+
+.compare-table thead .cmp-ours{
+    background:#2E7D32;
+    color:#fff;
+}
+
+.cmp-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:28px;
+    height:28px;
+    border-radius:50%;
+}
+
+.cmp-icon.yes{
+    background:#2E7D32;
+    color:#fff;
+}
+
+.cmp-icon.no{
+    background:#F3E3E1;
+    color:#B23A2E;
+}
+
+.cmp-sr{
+    position:absolute;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+    clip:rect(0 0 0 0);
+    white-space:nowrap;
+}
+
+.compare-note{
+    margin:14px 20px 0;
+    font-size:13px;
+    line-height:1.5;
+    color:#8a949e;
+    text-align:center;
+}
+
+/* desktop: fill the laptop window like the other sections */
+@media(min-width:993px){
+    .compare-section{
+        padding:28px 0;
+        min-height:min(calc(100vh - 61px), 820px);
+        display:flex;
+        align-items:center;
+    }
+
+    .compare-section > .container{
+        width:100%;
+    }
+
+    .compare-section .section-heading{
+        margin-bottom:0;
+    }
+
+    .compare-section .section-tag{
+        padding:9px 20px;
+        margin-bottom:12px;
+    }
+
+    .compare-section .section-title{
+        font-size:clamp(32px, 2.8vw, 44px);
+        margin-bottom:0;
+    }
+
+    .compare-table-wrap{
+        margin-top:22px;
+    }
+
+    .compare-table th,
+    .compare-table td{
+        padding:11px 18px;
+    }
+}
+
+@media(max-width:768px){
+    .compare-section{
+        padding:70px 16px;
+    }
+
+    .compare-table-wrap{
+        padding:0;
+        margin-top:24px;
+    }
+
+    .compare-table{
+        font-size:13px;
+        border-radius:16px;
+    }
+
+    .compare-table th,
+    .compare-table td{
+        padding:10px 6px;
+    }
+
+    .compare-table thead th{
+        font-size:13px;
+    }
+
+    .compare-table tbody th{
+        width:28%;
+        padding-left:12px;
+    }
+
+    .compare-note{
+        margin:12px 0 0;
+        font-size:12px;
+    }
+}

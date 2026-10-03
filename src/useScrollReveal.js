@@ -11,6 +11,8 @@ const REVEAL_SELECTORS = [
   ".product-image",
   ".product-content",
   ".product-spec-card",
+  ".lab-badge",
+  ".compare-table-wrap",
   ".process-navigation",
   ".process-showcase",
   ".gallery-folder",

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator, Leaf, Package, Trees } from "lucide-react";
+import { Calculator, Leaf, Package, Share2, Trees } from "lucide-react";
 
 // Gross calorific value of our pellets (from the product spec sheet).
 const PELLET_GCV = 4603; // kcal/kg
@@ -15,6 +15,8 @@ const FUELS = {
   firewood: { label: "Firewood", gcv: 3500, co2PerKg: 0 },
   furnaceOil: { label: "Furnace oil", gcv: 10000, co2PerKg: 3.13 },
 };
+
+const SITE_URL = "https://himalayangreenfuel.com";
 
 // A mature tree absorbs roughly 21 kg of CO2 a year (commonly used estimate).
 const CO2_PER_TREE_PER_YEAR = 21; // kg
@@ -48,6 +50,15 @@ function SavingsCalculator() {
   const co2Month = qty * current.co2PerKg; // tonnes
   const co2Year = co2Month * 12;
   const treesEquivalent = (co2Year * 1000) / CO2_PER_TREE_PER_YEAR;
+
+  // Message for the "Share on WhatsApp" button.
+  const shareText =
+    current.co2PerKg > 0
+      ? `Switching from ${formatNumber(qty)} tonnes of ${current.label.toLowerCase()} a month to pine needle pellets would avoid about ${formatNumber(co2Year, 0)} tonnes of CO₂ a year, as much as ${formatNumber(treesEquivalent, 0)} trees absorb. Calculate yours with Himalayan Green Fuel:`
+      : `Switching from ${formatNumber(qty)} tonnes of firewood a month to pine needle pellets would save ${formatNumber(qty * 12, 0)} tonnes of firewood a year. Calculate yours with Himalayan Green Fuel:`;
+  const shareUrl =
+    "https://wa.me/?text=" +
+    encodeURIComponent(`${shareText} ${SITE_URL}`);
 
   return (
     <section id="calculator" className="calculator-section">
@@ -180,6 +191,17 @@ function SavingsCalculator() {
             >
               Get a Pellet Quote
             </a>
+
+            {qty > 0 && (
+              <a
+                className="calc-share-btn"
+                href={shareUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Share2 size={18} /> Share your result on WhatsApp
+              </a>
+            )}
 
             <p className="calc-note">
               Estimates based on IPCC emission factors and typical values ({current.label.toLowerCase()} ≈{" "}
