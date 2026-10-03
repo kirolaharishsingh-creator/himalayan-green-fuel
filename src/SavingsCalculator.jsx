@@ -6,10 +6,14 @@ const PELLET_GCV = 4603; // kcal/kg
 
 // Typical values for the fuels industrial boilers in the region switch from.
 // CO2 is fossil CO2 only; firewood is biomass, so no fossil CO2 is counted.
+// Emission factors are IPCC 2006 defaults:
+// - coal: sub-bituminous 96.1 tCO2/TJ x ~15.9 MJ/kg (net) for ~4,000 kcal/kg
+//   Indian coal = ~1.53 kg CO2/kg
+// - furnace oil (residual fuel oil): 77.4 tCO2/TJ x 40.4 MJ/kg = ~3.13 kg CO2/kg
 const FUELS = {
-  coal: { label: "Coal", gcv: 4000, co2PerKg: 1.59 },
+  coal: { label: "Coal", gcv: 4000, co2PerKg: 1.53 },
   firewood: { label: "Firewood", gcv: 3500, co2PerKg: 0 },
-  furnaceOil: { label: "Furnace oil", gcv: 10000, co2PerKg: 3.24 },
+  furnaceOil: { label: "Furnace oil", gcv: 10000, co2PerKg: 3.13 },
 };
 
 // A mature tree absorbs roughly 21 kg of CO2 a year (commonly used estimate).
@@ -136,8 +140,8 @@ function SavingsCalculator() {
                       {formatNumber(qty * 12, 0)} tonnes of firewood
                     </strong>
                     <span>
-                      a year no longer cut from forests: pellets are made
-                      from fallen pine needles
+                      a year no longer needed: pellets are made from fallen
+                      pine needles instead of wood
                     </span>
                   </div>
                 </div>
@@ -160,7 +164,7 @@ function SavingsCalculator() {
             </a>
 
             <p className="calc-note">
-              Estimates based on typical values ({current.label.toLowerCase()} ≈{" "}
+              Estimates based on IPCC emission factors and typical values ({current.label.toLowerCase()} ≈{" "}
               {formatNumber(current.gcv, 0)} kcal/kg, our pellets{" "}
               {formatNumber(PELLET_GCV, 0)} kcal/kg; a tree absorbs ≈{" "}
               {CO2_PER_TREE_PER_YEAR} kg CO₂ a year). Actual results depend
