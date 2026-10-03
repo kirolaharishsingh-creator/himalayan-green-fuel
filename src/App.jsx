@@ -11,12 +11,14 @@ import {
   Truck,
   Cog,
   BadgeCheck,
-  MessageCircle
+  MessageCircle,
+  ShieldCheck
 } from "lucide-react";
 
 import { useState } from "react";
 
 import SavingsCalculator from "./SavingsCalculator";
+import FuelComparison from "./FuelComparison";
 import useScrollReveal from "./useScrollReveal";
 
 const WHATSAPP_URL =
@@ -619,12 +621,32 @@ SAVINGS CALCULATOR
         <span>Available Sizes</span>
       </div>
 
+      <div className="product-spec-card">
+        <h3>1,140 °C</h3>
+        <span>Ash Fusion Temp. (IDT)</span>
+      </div>
+
+    </div>
+
+    <div className="lab-badge">
+      <ShieldCheck size={22} />
+      <p>
+        <strong>Lab tested.</strong> Calorific value, ash and moisture
+        tested by a NABL-accredited laboratory (IS 1350); ash fusion
+        temperature tested to ASTM D1857.
+      </p>
     </div>
 
   </div>
 
 
 </section>
+
+{/* ===========================
+FUEL COMPARISON
+=========================== */}
+
+<FuelComparison />
 
 {/* ===========================
 MANUFACTURING PROCESS
