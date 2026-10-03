@@ -217,10 +217,6 @@ return (
 
       <nav className={`header-nav ${menuOpen ? "open" : ""}`}>
 
-        <a href="#calculator" onClick={() => setMenuOpen(false)}>
-          Savings
-        </a>
-
         <a href="#about" onClick={() => setMenuOpen(false)}>
           About
         </a>
@@ -274,13 +270,6 @@ return (
         </p>
 
         <div className="hero-buttons">
-
-          <a
-            href="#calculator"
-            className="primary-btn hero-calc-btn"
-          >
-            Calculate Your CO₂ Savings
-          </a>
 
           <a
             href="mailto:himalayangreenfuel@gmail.com"
@@ -1127,8 +1116,6 @@ id="manufacturing"
     <nav className="footer-nav">
 
       <a href="#home">Home</a>
-
-      <a href="#calculator">Savings</a>
 
       <a href="#about">About</a>
 
