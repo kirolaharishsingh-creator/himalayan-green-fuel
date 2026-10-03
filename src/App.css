@@ -4306,3 +4306,12 @@ section[id]{
         font-size:16px;
     }
 }
+
+/* calculator sits right under the hero: start its content at the top so
+   more of it shows on landing (instead of centring it in the window) */
+@media(min-width:993px){
+    .calculator-section{
+        align-items:flex-start;
+        padding-top:36px;
+    }
+}
