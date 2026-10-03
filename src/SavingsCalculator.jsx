@@ -122,6 +122,11 @@ function SavingsCalculator() {
 
             </div>
 
+            <p className="calc-price-hint">
+              Pellet prices differ for wholesale and bulk orders. Ask us
+              for a quote for your quantity.
+            </p>
+
           </div>
 
           {/* RESULTS */}
@@ -182,7 +187,8 @@ function SavingsCalculator() {
                   <>
                     <strong>Cost comparison</strong>
                     <span>
-                      add both prices above, or ask us for a pellet quote
+                      add both prices above; pellet prices depend on
+                      order size (wholesale or bulk)
                     </span>
                   </>
                 )}
