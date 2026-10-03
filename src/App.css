@@ -4273,25 +4273,6 @@ section[id]{
     }
 }
 
-/* ==========================================
-   HERO: "Calculate Your CO2 Savings" is the first, filled button
-========================================== */
-
-.hero-buttons{
-    flex-wrap:wrap;
-    justify-content:center;
-}
-
-.hero-calc-btn{
-    background:#2E7D32;
-    border-color:#2E7D32;
-}
-
-.hero-calc-btn:hover{
-    background:#fff;
-    border-color:#fff;
-    color:#2E7D32;
-}
 
 
 @media(max-width:768px){
@@ -4300,10 +4281,6 @@ section[id]{
         padding-left:16px;
         padding-right:16px;
         white-space:nowrap;
-    }
-
-    .hero-calc-btn{
-        font-size:16px;
     }
 }
 
