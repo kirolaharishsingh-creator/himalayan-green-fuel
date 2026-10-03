@@ -4614,3 +4614,8 @@ section[id]{
         font-size:12px;
     }
 }
+
+/* step photo wrapper (lets a step serve a portrait image on phones) */
+.process-image picture{
+    display:block;
+}
