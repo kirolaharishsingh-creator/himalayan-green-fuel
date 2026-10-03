@@ -78,8 +78,14 @@ function App() {
       id: "05",
       title: "Quality Testing",
       icon: <BadgeCheck size={28} />,
-      image: "gallery/testing-report-wide.jpg",
-      mobileImage: "gallery/testing-report-tall.jpg",
+      image: "gallery/pellet-product.webp",
+      // lab results shown over the photo (NABL report QTRC/9120260527/01)
+      stats: [
+        { value: "4,603", unit: "kcal/kg", label: "Gross Calorific Value" },
+        { value: "3.1", unit: "%", label: "Ash content" },
+        { value: "5.3", unit: "%", label: "Moisture" },
+      ],
+      report: "reports/reports.jpeg",
       description:
         "Each batch is tested before dispatch."
     },
@@ -719,18 +725,41 @@ id="manufacturing"
 
       <div className="process-image">
 
-        <picture>
-          {activeProcess.mobileImage && (
-            <source
-              media="(max-width: 768px)"
-              srcSet={activeProcess.mobileImage}
-            />
-          )}
-          <img
-            src={activeProcess.image}
-            alt={activeProcess.title}
-          />
-        </picture>
+        <img
+          src={activeProcess.image}
+          alt={activeProcess.title}
+        />
+
+        {activeProcess.stats && (
+          <div className="process-stats">
+
+            <div className="process-stats-tag">
+              NABL-accredited lab report
+            </div>
+
+            <div className="process-stats-grid">
+              {activeProcess.stats.map((stat) => (
+                <div className="process-stat" key={stat.label}>
+                  <strong>
+                    {stat.value}
+                    <small>{stat.unit}</small>
+                  </strong>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <a
+              className="process-stats-link"
+              href={activeProcess.report}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View full report
+            </a>
+
+          </div>
+        )}
 
         <div className="process-overlay">
 
