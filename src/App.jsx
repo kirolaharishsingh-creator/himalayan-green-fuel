@@ -136,6 +136,32 @@ function App() {
 
 };
 
+// Gallery album cards: cover photo plus two photos stacked behind it
+// (indexes into the matching gallery list above).
+const galleryAlbums = [
+  {
+    key: "inauguration",
+    title: "Inauguration",
+    caption: "Opening day of our Someshwar plant",
+    cover: 1,
+    back: [4, 0],
+  },
+  {
+    key: "plant",
+    title: "Our Plant",
+    caption: "From pine needles to pellets",
+    cover: 0,
+    back: [4, 5],
+  },
+  {
+    key: "shg",
+    title: "Self Help Groups",
+    caption: "Women of Almora collecting pine needles",
+    cover: 4,
+    back: [2, 0],
+  },
+];
+
 const handleContactSubmit = (e) => {
 
   e.preventDefault();
@@ -813,35 +839,48 @@ id="manufacturing"
 
     <div className="gallery-folders">
 
-      {/* Inauguration */}
+      {galleryAlbums.map((album) => (
+        <button
+          type="button"
+          key={album.key}
+          className="gallery-folder"
+          onClick={() => openGallery(album.key)}
+        >
 
-      <div
-        className="gallery-folder"
-        onClick={() => openGallery("inauguration")}
-      >
-        <div className="folder-icon">📁</div>
-        <h3>Inauguration</h3>
-      </div>
+          {/* two more photos from the album peek out behind the cover */}
+          <img
+            className="album-back album-back-1"
+            src={galleries[album.key][album.back[0]]}
+            alt=""
+            loading="lazy"
+          />
+          <img
+            className="album-back album-back-2"
+            src={galleries[album.key][album.back[1]]}
+            alt=""
+            loading="lazy"
+          />
 
-      {/* Plant */}
+          <span className="album-cover">
+            <img
+              src={galleries[album.key][album.cover]}
+              alt={album.title}
+              loading="lazy"
+            />
 
-      <div
-  className="gallery-folder"
-  onClick={() => openGallery("plant")}
->
-        <div className="folder-icon">📁</div>
-        <h3>Plant</h3>
-      </div>
+            <span className="album-count">
+              {galleries[album.key].length} photos
+            </span>
 
-      {/* SHG */}
+            <span className="album-info">
+              <h3>{album.title}</h3>
+              <span className="album-caption">{album.caption}</span>
+              <span className="album-open">View album →</span>
+            </span>
+          </span>
 
-      <div
-        className="gallery-folder"
-        onClick={() => openGallery("shg")}
-      >
-        <div className="folder-icon">📁</div>
-        <h3>Self Help Groups (SHG)</h3>
-      </div>
+        </button>
+      ))}
 
     </div>
 
