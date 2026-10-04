@@ -40,22 +40,22 @@ const goToInquiryForm = (e) => {
 
 function SavingsCalculator() {
   const [fuel, setFuel] = useState("coal");
-  const [tonnes, setTonnes] = useState("10");
+  const [kilos, setKilos] = useState("1000");
 
   const current = FUELS[fuel];
-  const qty = Math.max(parseFloat(tonnes) || 0, 0);
+  const qty = Math.max(parseFloat(kilos) || 0, 0); // kg a month
 
-  // Pellets needed to deliver the same heat.
-  const pelletTonnes = (qty * current.gcv) / PELLET_GCV;
-  const co2Month = qty * current.co2PerKg; // tonnes
+  // Pellets needed to deliver the same heat (kg a month).
+  const pelletKg = (qty * current.gcv) / PELLET_GCV;
+  const co2Month = qty * current.co2PerKg; // kg
   const co2Year = co2Month * 12;
-  const treesEquivalent = (co2Year * 1000) / CO2_PER_TREE_PER_YEAR;
+  const treesEquivalent = co2Year / CO2_PER_TREE_PER_YEAR;
 
   // Message for the "Share on WhatsApp" button.
   const shareText =
     current.co2PerKg > 0
-      ? `Switching from ${formatNumber(qty)} tonnes of ${current.label.toLowerCase()} a month to pine needle pellets would avoid about ${formatNumber(co2Year, 0)} tonnes of CO₂ a year, as much as ${formatNumber(treesEquivalent, 0)} trees absorb. Calculate yours with Himalayan Green Fuel:`
-      : `Switching from ${formatNumber(qty)} tonnes of firewood a month to pine needle pellets would save ${formatNumber(qty * 12, 0)} tonnes of firewood a year. Calculate yours with Himalayan Green Fuel:`;
+      ? `Switching from ${formatNumber(qty, 0)} kg of ${current.label.toLowerCase()} a month to pine needle pellets would avoid about ${formatNumber(co2Year, 0)} kg of CO₂ a year, as much as ${formatNumber(treesEquivalent, 0)} trees absorb. Calculate yours with Himalayan Green Fuel:`
+      : `Switching from ${formatNumber(qty, 0)} kg of firewood a month to pine needle pellets would save ${formatNumber(qty * 12, 0)} kg of firewood a year. Calculate yours with Himalayan Green Fuel:`;
   const shareUrl =
     "https://wa.me/?text=" +
     encodeURIComponent(`${shareText} ${SITE_URL}`);
@@ -106,21 +106,21 @@ function SavingsCalculator() {
             </div>
 
             <label className="calc-field">
-              <span>{current.label} used per month (tonnes)</span>
+              <span>{current.label} used per month (kg)</span>
               <input
                 type="number"
                 min="0"
-                step="0.5"
+                step="100"
                 inputMode="decimal"
-                value={tonnes}
-                onChange={(e) => setTonnes(e.target.value)}
+                value={kilos}
+                onChange={(e) => setKilos(e.target.value)}
               />
             </label>
 
             <div className="calc-result">
               <Package size={26} />
               <div>
-                <strong>{formatNumber(pelletTonnes)} tonnes of pellets</strong>
+                <strong>{formatNumber(pelletKg, 0)} kg of pellets</strong>
                 <span>per month give the same heat</span>
               </div>
             </div>
@@ -136,10 +136,10 @@ function SavingsCalculator() {
                 <div className="calc-result calc-result-main">
                   <Leaf size={30} />
                   <div>
-                    <strong>{formatNumber(co2Year, 0)} tonnes CO₂</strong>
+                    <strong>{formatNumber(co2Year, 0)} kg CO₂</strong>
                     <span>
                       of fossil emissions avoided every year
-                      ({formatNumber(co2Month)} tonnes a month)
+                      ({formatNumber(co2Month, 0)} kg a month)
                     </span>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ function SavingsCalculator() {
                   <Trees size={30} />
                   <div>
                     <strong>
-                      {formatNumber(qty * 12, 0)} tonnes of firewood
+                      {formatNumber(qty * 12, 0)} kg of firewood
                     </strong>
                     <span>
                       a year no longer needed: pellets are made from fallen
