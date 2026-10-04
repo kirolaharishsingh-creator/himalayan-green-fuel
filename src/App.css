@@ -4753,15 +4753,6 @@ GALLERY: PHOTO ALBUM CARDS
     transform:rotate(4deg) translate(8px, 6px);
 }
 
-.gallery-folder:hover .album-back-1,
-.gallery-folder:focus-visible .album-back-1{
-    transform:rotate(-10deg) translate(-26px, -4px);
-}
-
-.gallery-folder:hover .album-back-2,
-.gallery-folder:focus-visible .album-back-2{
-    transform:rotate(9deg) translate(26px, -2px);
-}
 
 /* the cover photo */
 .album-cover{
@@ -4776,10 +4767,6 @@ GALLERY: PHOTO ALBUM CARDS
     transition:transform .45s ease, box-shadow .45s ease;
 }
 
-.gallery-folder:hover .album-cover{
-    transform:translateY(-6px);
-    box-shadow:0 30px 55px rgba(46,125,50,.28);
-}
 
 .album-cover img{
     width:100%;
@@ -4789,9 +4776,6 @@ GALLERY: PHOTO ALBUM CARDS
     transition:transform .7s ease;
 }
 
-.gallery-folder:hover .album-cover img{
-    transform:scale(1.07);
-}
 
 .album-cover::after{
     content:"";
@@ -4855,9 +4839,6 @@ GALLERY: PHOTO ALBUM CARDS
     transition:transform .3s ease;
 }
 
-.gallery-folder:hover .album-open{
-    transform:translateX(5px);
-}
 
 @media(max-width:992px){
 
@@ -4905,6 +4886,35 @@ GALLERY: PHOTO ALBUM CARDS
 
     .album-caption{
         font-size:13px;
+    }
+}
+
+/* album hover effects only with a mouse on desktop; on touch
+   screens a tap leaves the card "hovered" and the fanned-out photos
+   would stick out past the screen edge */
+@media(hover:hover) and (min-width:993px){
+
+    .gallery-folder:hover .album-back-1,
+    .gallery-folder:focus-visible .album-back-1{
+        transform:rotate(-10deg) translate(-26px, -4px);
+    }
+
+    .gallery-folder:hover .album-back-2,
+    .gallery-folder:focus-visible .album-back-2{
+        transform:rotate(9deg) translate(26px, -2px);
+    }
+
+    .gallery-folder:hover .album-cover{
+        transform:translateY(-6px);
+        box-shadow:0 30px 55px rgba(46,125,50,.28);
+    }
+
+    .gallery-folder:hover .album-cover img{
+        transform:scale(1.07);
+    }
+
+    .gallery-folder:hover .album-open{
+        transform:translateX(5px);
     }
 }
 
