@@ -46,7 +46,7 @@ body{margin:0; height:100%; background:var(--stage); color:var(--stage-ink); fon
 .ctrl button:disabled{opacity:.3; cursor:default}
 .ctrl button:not(:disabled):hover{background:rgba(255,255,255,.08)}
 #count{min-width:120px; text-align:center; font-size:15px; color:var(--muted)}
-.hint{text-align:center; font-size:13px; color:var(--muted); margin:-6px 0 4px}
+.hint{position:relative; z-index:1; text-align:center; font-size:13px; color:var(--muted); margin:2px 0 4px}
 @media (prefers-reduced-motion: reduce){ .leaf,.book{transition:none!important} }
 
 /* pages */
@@ -91,6 +91,23 @@ body{margin:0; height:100%; background:var(--stage); color:var(--stage-ink); fon
 .pg a{color:var(--deep); font-weight:600; text-decoration:none}
 .qr{display:flex; gap:14px; align-items:center; font-size:14px; color:var(--soft)}
 .qr img{width:92px; height:92px; display:block}
+/* small phones: logo + call link on one line, so the pages get more height */
+@media (max-width:400px){
+  .brand span{display:none}
+  .top{padding:8px 14px}
+}
+/* phones held sideways: little height, so the top bar floats in the corners
+   and the arrows sit beside the page */
+@media (max-height:500px) and (orientation:landscape){
+  .top{position:fixed; top:0; left:0; right:0; z-index:2; padding:6px 14px; pointer-events:none}
+  .top > *{pointer-events:auto}
+  .brand span{display:none}
+  .hint{display:none}
+  .ctrl{position:fixed; left:0; right:0; top:calc(50% - 24px); z-index:2; justify-content:space-between; padding:0 14px; pointer-events:none}
+  .ctrl button{pointer-events:auto; background:rgba(14,42,18,.85)}
+  #count{position:fixed; left:14px; bottom:8px; min-width:0; text-align:left; font-size:13px}
+  .top a{font-size:12px; padding:6px 2px}
+}
 /* shown inside the website popup: the popup has its own title bar */
 .embedded .top{display:none}
 </style>
