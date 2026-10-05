@@ -28,6 +28,10 @@ body{margin:0; height:100%; background:var(--stage); color:var(--stage-ink); fon
 .top a:focus-visible,.ctrl button:focus-visible,.pg a:focus-visible{outline:3px solid var(--amber); outline-offset:3px; border-radius:6px}
 .stage{flex:1; position:relative; overflow:hidden; touch-action:pan-y; cursor:pointer; user-select:none}
 .fit{position:absolute; left:50%; top:50%; perspective:2400px}
+/* sharp mode: pages are laid out at their real on-screen size (zoom)
+   instead of being drawn small and stretched (transform: scale) */
+.stage.zoomed{display:flex; align-items:center; justify-content:center}
+.zoomed .fit{position:relative; left:auto; top:auto; flex-shrink:0}
 .book{position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .7s cubic-bezier(.3,.7,.3,1)}
 .leaf{position:absolute; top:0; height:100%; width:420px; transform-origin:left center; transform-style:preserve-3d; transition:transform .85s cubic-bezier(.45,.05,.25,1)}
 .leaf.flipped{transform:rotateY(-180deg)}
@@ -213,6 +217,8 @@ body{margin:0; height:100%; background:var(--stage); color:var(--stage-ink); fon
   var prev = document.getElementById('prev'), next = document.getElementById('next'), count = document.getElementById('count'), hint = document.getElementById('hint');
   var mode = null, leaves = [], cur = 0, page = 0; // page = index of first visible page
   var W = 840, H = 594;
+  var sharp = !!(window.CSS && CSS.supports && CSS.supports('zoom', '2'));
+  if (sharp) stage.classList.add('zoomed');
 
   function face(cls, node){ var f = document.createElement('div'); f.className = 'face ' + cls; if (node) f.appendChild(node.cloneNode(true)); else f.classList.add('blank'); return f; }
 
@@ -253,7 +259,12 @@ body{margin:0; height:100%; background:var(--stage); color:var(--stage-ink); fon
     var r = stage.getBoundingClientRect();
     var s = Math.min((r.width - 24) / W, (r.height - 16) / H);
     s = Math.max(0.3, Math.min(s, 1.6));
-    fit.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+    if (sharp) {
+      // keeps text and images crisp at any size
+      fit.style.zoom = s;
+    } else {
+      fit.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+    }
   }
 
   function zFor(i){ return i < cur ? i + 1 : leaves.length * 2 - i; }
