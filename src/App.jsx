@@ -12,10 +12,12 @@ import {
   Cog,
   BadgeCheck,
   MessageCircle,
-  ShieldCheck
+  ShieldCheck,
+  BookOpen,
+  X
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import SavingsCalculator from "./SavingsCalculator";
 import FuelComparison from "./FuelComparison";
@@ -29,6 +31,29 @@ const WHATSAPP_URL =
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [brochureOpen, setBrochureOpen] = useState(false);
+  const brochureCloseRef = useRef(null);
+
+  // Brochure popup: close with Esc, stop the page behind from scrolling.
+  useEffect(() => {
+    if (!brochureOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setBrochureOpen(false);
+    };
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    brochureCloseRef.current?.focus();
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [brochureOpen]);
+
+  const openBrochure = () => {
+    setMenuOpen(false);
+    setBrochureOpen(true);
+  };
 
   useScrollReveal();
 
@@ -239,14 +264,29 @@ return (
 
 </div>
 
-      {/* Mobile Button */}
+      {/* Mobile: brochure icon + menu button */}
 
-      <button
-        className="header-toggle"
-        onClick={() => setMenuOpen(!menuOpen)}
-      >
-        ☰
-      </button>
+      <div className="header-actions">
+
+        <button
+          type="button"
+          className="brochure-btn brochure-btn-icon"
+          onClick={openBrochure}
+          aria-label="View our brochure"
+          title="View our brochure"
+        >
+          <BookOpen size={20} />
+          <span className="brochure-new">NEW</span>
+        </button>
+
+        <button
+          className="header-toggle"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          ☰
+        </button>
+
+      </div>
 
       {/* Navigation */}
 
@@ -272,6 +312,16 @@ return (
         <a href="#contact" onClick={() => setMenuOpen(false)}>
           Contact
         </a>
+
+        <button
+          type="button"
+          className="brochure-btn brochure-btn-nav"
+          onClick={openBrochure}
+        >
+          <BookOpen size={18} />
+          Brochure
+          <span className="brochure-new">NEW</span>
+        </button>
 
       </nav>
 
@@ -982,6 +1032,51 @@ id="manufacturing"
 
 </section>
 
+
+{brochureOpen && (
+
+  <div
+    className="brochure-modal"
+    onClick={() => setBrochureOpen(false)}
+  >
+
+    <div
+      className="brochure-modal-box"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Himalayan Green Fuel brochure"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <div className="brochure-modal-bar">
+
+        <span className="brochure-modal-title">
+          <BookOpen size={20} /> Our Brochure
+        </span>
+
+        <button
+          type="button"
+          ref={brochureCloseRef}
+          className="brochure-close"
+          onClick={() => setBrochureOpen(false)}
+          aria-label="Close brochure"
+        >
+          <X size={22} />
+        </button>
+
+      </div>
+
+      <iframe
+        src="brochure.html"
+        title="Himalayan Green Fuel brochure"
+        className="brochure-frame"
+      />
+
+    </div>
+
+  </div>
+
+)}
 
 {showVideo && (
 
