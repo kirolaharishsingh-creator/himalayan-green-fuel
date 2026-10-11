@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pirul to Pellet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Hind:wght@400;500;600&display=swap">
+<style>
+/* Layout: one full-screen game board, a slim status bar on top and a task bar below; panels slide over the board. */
+:root {
+  --pine: #18301f;        /* deep chir-pine green, HUD ground */
+  --pine-2: #234430;      /* raised HUD surfaces */
+  --pine-line: #3b5e46;   /* hairlines on HUD */
+  --pirul: #d98a3d;       /* dry pine-needle rust, the accent */
+  --birch: #f1e9d6;       /* bhojpatra parchment, main text */
+  --lichen: #a9bba9;      /* muted text */
+  --gold: #f0c35a;        /* money */
+  --fire: #ec5434;        /* fire risk */
+  --font-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Hind", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--pine);
+  color: var(--birch);
+  font-family: var(--font-body);
+  font-size: 15px;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+#app { height: 100%; display: flex; flex-direction: column; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--pirul); outline-offset: 2px; }
+
+/* status bar */
+.hud {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px;
+  background: var(--pine); border-bottom: 1px solid var(--pine-line);
+}
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1; color: var(--pirul); letter-spacing: 0.01em; margin-right: auto; }
+.stat { display: flex; flex-direction: column; min-width: 0; }
+.stat .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--lichen); }
+.stat .v { font-family: var(--font-display); font-weight: 600; font-size: 18px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat .v.money { color: var(--gold); }
+.risk { width: 150px; }
+.meter { height: 9px; border-radius: 5px; background: var(--pine-2); border: 1px solid var(--pine-line); overflow: hidden; margin-top: 4px; }
+.meter i { display: block; height: 100%; width: 0; background: var(--pirul); transition: width .2s linear; }
+.risk.hot .meter i { background: var(--fire); }
+.risk.hot .k { color: var(--fire); }
+@media (prefers-reduced-motion: no-preference) { .risk.hot .meter { animation: pulse 0.8s ease-in-out infinite alternate; } }
+@keyframes pulse { to { box-shadow: 0 0 0 3px rgba(236, 84, 52, .35); } }
+
+#stage { position: relative; flex: 1; min-height: 0; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+
+/* task bar */
+.taskbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--pine); border-top: 1px solid var(--pine-line);
+}
+.carry { font-family: var(--font-display); font-weight: 600; font-size: 14px; padding: 4px 10px; border-radius: 999px; background: var(--pine-2); border: 1px solid var(--pine-line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hint { flex: 1 1 220px; min-width: 0; color: var(--birch); line-height: 1.3; }
+.btn {
+  border: 1px solid var(--pine-line); background: var(--pine-2);
+  padding: 7px 14px; border-radius: 8px; font-weight: 600; white-space: nowrap;
+}
+.btn:hover:not(:disabled) { border-color: var(--pirul); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--pirul); border-color: var(--pirul); color: var(--pine); }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); }
+
+/* overlays */
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(12, 24, 16, .72); overflow-y: auto; }
+.card {
+  width: min(560px, 100%); background: var(--pine); border: 1px solid var(--pine-line);
+  border-radius: 14px; padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+}
+.card h1, .card h2 { font-family: var(--font-display); font-weight: 800; margin: 0; line-height: 1.05; text-wrap: balance; }
+.card h1 { font-size: clamp(30px, 7vw, 42px); color: var(--pirul); }
+.card h2 { font-size: 26px; }
+.card p { margin: 0; line-height: 1.5; color: var(--lichen); max-width: 62ch; }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; line-height: 1.4; }
+.steps li::before {
+  content: counter(s); font-family: var(--font-display); font-weight: 800; font-size: 14px;
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--pine-2); border: 1px solid var(--pirul); color: var(--pirul);
+}
+.steps b { color: var(--birch); font-weight: 600; }
+.keys { font-size: 13px; color: var(--lichen); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.best { font-size: 13px; color: var(--lichen); margin-left: auto; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.facts div { background: var(--pine-2); border-radius: 10px; padding: 10px 12px; }
+.facts .k { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--lichen); }
+.facts .v { font-family: var(--font-display); font-weight: 600; font-size: 22px; font-variant-numeric: tabular-nums; }
+
+.uplist { display: grid; gap: 10px; }
+.up { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 12px; background: var(--pine-2); border-radius: 10px; }
+.up .name { font-weight: 600; color: var(--birch); }
+.up .desc { grid-column: 1; font-size: 13px; color: var(--lichen); line-height: 1.35; }
+.up .lvl { grid-column: 1; font-size: 13px; color: var(--pirul); font-variant-numeric: tabular-nums; }
+.up .btn { grid-column: 2; grid-row: 1 / span 3; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 560px) {
+  .brand { display: none; }
+  .hud { gap: 6px 14px; }
+  .risk { width: 110px; }
+  .stat .v { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hud">
+    <div class="brand">Pirul to Pellet</div>
+    <div class="stat"><span class="k">Earnings</span><span class="v money" id="hMoney">₹0</span></div>
+    <div class="stat"><span class="k">Pellets made</span><span class="v" id="hPellets">0 kg</span></div>
+    <div class="stat"><span class="k">Season</span><span class="v" id="hTime">0:00</span></div>
+    <div class="stat risk" id="hRisk"><span class="k" id="hRiskLabel">Fire risk 0%</span><div class="meter"><i id="hRiskBar"></i></div></div>
+  </header>
+
+  <div id="stage">
+    <canvas id="c" aria-label="Game board: forest on the left, raw material shed and pellet plant on the right"></canvas>
+
+    <div class="overlay" id="startOv">
+      <div class="card">
+        <h1>Pirul to Pellet</h1>
+        <p>Every summer the chir pine forests of Kumaon drop a thick carpet of dry needles, called pirul. Left on the ground it feeds forest fires. Collected, it becomes fuel pellets. Keep the forest floor clear and keep the plant running.</p>
+        <ol class="steps">
+          <li><span><b>Rake fallen pirul</b> in the forest by walking over it. It fills your doko basket.</span></li>
+          <li><span><b>Empty the doko at the baling press.</b> Every 20 kg is pressed into one bundle.</span></li>
+          <li><span><b>The truck carries bundles</b> to the raw material shed. It leaves when full, or send it early.</span></li>
+          <li><span><b>Pick bundles up at the shed</b> and carry them to the pellet plant hopper.</span></li>
+          <li><span><b>The plant presses pellets.</b> Each bundle makes 17 kg of pellets, sold at ₹9 a kg.</span></li>
+        </ol>
+        <p class="keys">Tap or click where you want to walk, or use the arrow keys or WASD. Spend your earnings on upgrades and hired help. If the fire risk reaches 100%, the forest catches fire and the season ends.</p>
+        <div class="row">
+          <button class="btn primary" id="startBtn">Start the season</button>
+          <span class="best" id="bestLine"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="upOv" hidden>
+      <div class="card">
+        <div class="row"><h2>Upgrades</h2><span class="best" id="upMoney"></span></div>
+        <div class="uplist" id="upList"></div>
+        <div class="row"><button class="btn primary" id="upClose">Back to work</button></div>
+      </div>
+    </div>
+
+    <div class="overlay" id="overOv" hidden>
+      <div class="card">
+        <h2 id="overTitle">The forest caught fire</h2>
+        <p id="overText">Too much dry pirul piled up on the forest floor.</p>
+        <div class="facts">
+          <div><div class="k">Season lasted</div><div class="v" id="oTime">0:00</div></div>
+          <div><div class="k">Pirul collected</div><div class="v" id="oCollected">0 kg</div></div>
+          <div><div class="k">Pellets made</div><div class="v" id="oPellets">0 kg</div></div>
+          <div><div class="k">Earnings</div><div class="v" id="oMoney">₹0</div></div>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="againBtn">Play another season</button>
+          <span class="best" id="overBest"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="taskbar">
+    <span class="carry" id="hCarry">Doko 0 / 10 kg</span>
+    <span class="hint" id="hHint">Walk over the fallen pine needles to rake them up.</span>
+    <button class="btn" id="truckBtn" disabled>Send truck</button>
+    <button class="btn" id="upBtn">Upgrades</button>
+  </footer>
+</div>
+
+<script>
+(() => {
+  // ---------- world constants ----------
+  const W = 1600, H = 1000;
+  const FIRE_KG = 300;          // kg of pirul on the ground that starts a fire
+  const BUNDLE_KG = 20;         // kg of loose needles per pressed bundle
+  const PELLET_KG = 17;         // kg of pellets per bundle (after drying losses)
+  const PRICE = 9;              // ₹ per kg of pellets
+  const SHED_CAP = 40, HOPPER_CAP = 8, BALER_STACK = 8;
+  const FOREST = { x0: 40, y0: 50, x1: 640, y1: 960 };
+  const BALER = { x: 745, y: 650, r: 72 };
+  const SHED = { x: 1180, y: 380, r: 72 };        // pickup zone in front of the shed door
+  const HOPPER = { x: 1255, y: 670, r: 70 };       // plant hopper zone
+  const ROAD = [{ x: 880, y: 820 }, { x: 1000, y: 820 }, { x: 1000, y: 280 }];
+
+  const UP = {
+    basket:     { name: 'Bigger doko', desc: 'Carry more loose pirul in your basket.', vals: [10, 15, 20, 30], cost: [250, 450, 800], fmt: v => v + ' kg' },
+    trolley:    { name: 'Hand trolley', desc: 'Carry more bundles from the shed in one trip.', vals: [1, 2, 3, 4], cost: [300, 600, 1000], fmt: v => v + (v > 1 ? ' bundles' : ' bundle') },
+    truck:      { name: 'Bigger truck', desc: 'More bundles per trip and a quicker drive.', vals: [4, 6, 8], cost: [400, 900], fmt: v => v + ' bundles a trip' },
+    pelletizer: { name: 'New pelletizer die', desc: 'The plant turns each bundle into pellets faster.', vals: [5, 3.5, 2.5, 1.8], cost: [500, 900, 1500], fmt: v => v + ' s a bundle' },
+    collector:  { name: 'Hire a collector', desc: 'A villager rakes pirul and empties it at the press.', vals: [0, 1, 2, 3, 4], cost: [500, 800, 1200, 1800], fmt: v => v + ' hired' },
+    loader:     { name: 'Hire a shed loader', desc: 'Carries bundles from the shed to the plant hopper.', vals: [0, 1, 2], cost: [700, 1300], fmt: v => v + ' hired' },
+  };
+
+  // ---------- helpers ----------
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const rng = seed => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const fmtTime = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  const fmtKg = kg => Math.floor(kg).toLocaleString('en-IN') + ' kg';
+  const fmtRs = n => '₹' + Math.floor(n).toLocaleString('en-IN');
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+  };
+
+  // road geometry
+  const SEGS = []; let ROAD_LEN = 0;
+  for (let i = 0; i < ROAD.length - 1; i++) {
+    const a = ROAD[i], b = ROAD[i + 1], len = dist(a, b);
+    SEGS.push({ a, b, len, start: ROAD_LEN }); ROAD_LEN += len;
+  }
+  function roadAt(d) {
+    d = clamp(d, 0, ROAD_LEN);
+    for (const s of SEGS) {
+      if (d <= s.start + s.len) {
+        const k = (d - s.start) / s.len;
+        return { x: s.a.x + (s.b.x - s.a.x) * k, y: s.a.y + (s.b.y - s.a.y) * k, ang: Math.atan2(s.b.y - s.a.y, s.b.x - s.a.x) };
+      }
+    }
+  }
+
+  // static forest: chir pines and floor speckle, from a fixed seed
+  const TREES = [];
+  (() => {
+    const r = rng(11);
+    let tries = 0;
+    while (TREES.length < 46 && tries++ < 3000) {
+      const t = { x: FOREST.x0 + 20 + r() * (FOREST.x1 - FOREST.x0 - 20), y: FOREST.y0 + r() * (FOREST.y1 - FOREST.y0), rad: 24 + r() * 16 };
+      if (TREES.some(o => dist(o, t) < o.rad + t.rad + 30)) continue;
+      const pts = [], n = 18;
+      for (let i = 0; i < n; i++) pts.push((i % 2 ? 0.62 : 1) * (0.9 + r() * 0.2));
+      t.pts = pts; t.rot = r() * Math.PI; t.shade = r();
+      TREES.push(t);
+    }
+  })();
+  const SPECKS = [];
+  (() => { const r = rng(5); for (let i = 0; i < 420; i++) SPECKS.push({ x: r() * W, y: r() * H, s: 1 + r() * 2.5, c: r() }); })();
+
+  function inCanopy(x, y, pad) { return TREES.some(t => Math.hypot(t.x - x, t.y - y) < t.rad + pad); }
+
+  // ---------- game state (plain data so it can be snapshotted) ----------
+  let G;
+  function newGame() {
+    G = {
+      t: 0, money: 0, pellets: 0, collected: 0, ground: 0, rand: 99,
+      running: false, over: false, paused: false,
+      player: { x: 770, y: 540, tx: null, ty: null, needles: 0, bundles: 0, face: 0, step: 0 },
+      patches: [], fallAcc: 0, pops: [],
+      baler: { loose: 0, stack: 0, press: 0, conv: 0 },
+      truck: { state: 'depot', load: 0, d: 0, timer: 0 },
+      shed: { stock: 0 },
+      plant: { hopper: 0, proc: 0, bags: 0 },
+      lv: { basket: 0, trolley: 0, truck: 0, pelletizer: 0, collector: 0, loader: 0 },
+      npcs: [], xfer: 0,
+    };
+    while (groundKg() < 60) spawnNeedles(1);
+  }
+  const val = k => UP[k].vals[G.lv[k]];
+  function rand() { G.rand = (G.rand * 1664525 + 1013904223) >>> 0; return G.rand / 4294967296; }
+  function groundKg() { let s = 0; for (const p of G.patches) s += p.kg; return s; }
+
+  function spawnNeedles(kg) {
+    let x, y, tries = 0;
+    do {
+      x = FOREST.x0 + 10 + rand() * (FOREST.x1 - FOREST.x0 + 30);
+      y = FOREST.y0 + 10 + rand() * (FOREST.y1 - FOREST.y0 - 20);
+    } while (inCanopy(x, y, 8) && ++tries < 20);
+    const near = G.patches.find(p => Math.hypot(p.x - x, p.y - y) < 38 && p.kg < 8);
+    if (near) near.kg += kg;
+    else G.patches.push({ x, y, kg, s: Math.floor(rand() * 1e9) });
+  }
+
+  function pop(x, y, text, color) { G.pops.push({ x, y, text, color: color || '#f1e9d6', t: 0 }); }
+
+  // ---------- simulation ----------
+  function moveTo(e, tx, ty, speed, dt) {
+    const dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy);
+    if (d < 2) return true;
+    const s = Math.min(d, speed * dt);
+    e.x += dx / d * s; e.y += dy / d * s; e.face = Math.atan2(dy, dx); e.step += s;
+    return d - s < 2;
+  }
+
+  function rake(e, cap, rate, dt) {
+    let room = cap - e.needles;
+    if (room <= 0 || e.bundles > 0) return;
+    for (const p of G.patches) {
+      if (Math.hypot(p.x - e.x, p.y - e.y) < 34) {
+        const a = Math.min(rate * dt, p.kg, room);
+        p.kg -= a; e.needles += a; room -= a; G.collected += a;
+        if (room <= 0) break;
+      }
+    }
+    G.patches = G.patches.filter(p => p.kg > 0.05);
+  }
+
+  function addNpc(kind) {
+    G.npcs.push({ kind, x: kind === 'loader' ? 1150 : 760, y: kind === 'loader' ? 450 : 600 + G.npcs.length * 20, needles: 0, bundles: 0, face: 0, step: 0, tx: null, ty: null, hue: G.npcs.length });
+  }
+
+  const keys = new Set();
+  function step(dt) {
+    G.t += dt;
+    const P = G.player;
+
+    // needles keep falling, faster as the dry season goes on
+    const fall = Math.min(3.4, 0.5 + 0.0035 * G.t);
+    G.fallAcc += fall * dt;
+    while (G.fallAcc >= 0.5) { spawnNeedles(0.5); G.fallAcc -= 0.5; }
+
+    // player movement
+    let vx = 0, vy = 0;
+    if (keys.has('ArrowLeft') || keys.has('a')) vx -= 1;
+    if (keys.has('ArrowRight') || keys.has('d')) vx += 1;
+    if (keys.has('ArrowUp') || keys.has('w')) vy -= 1;
+    if (keys.has('ArrowDown') || keys.has('s')) vy += 1;
+    const speed = 210;
+    if (vx || vy) {
+      const m = Math.hypot(vx, vy); P.tx = null;
+      P.x += vx / m * speed * dt; P.y += vy / m * speed * dt; P.face = Math.atan2(vy, vx); P.step += speed * dt;
+    } else if (P.tx != null) {
+      if (moveTo(P, P.tx, P.ty, speed, dt)) P.tx = null;
+    }
+    P.x = clamp(P.x, 16, W - 16); P.y = clamp(P.y, 16, H - 16);
+
+    rake(P, val('basket'), 9, dt);
+
+    // baling press: take loose needles from anyone standing at it
+    const B = G.baler;
+    for (const e of [P, ...G.npcs]) {
+      if (e.needles > 0 && dist(e, BALER) < BALER.r) {
+        const a = Math.min(e.needles, 40 * dt);
+        e.needles -= a; B.loose += a;
+        if (e.needles < 0.01) e.needles = 0;
+      }
+    }
+    if (B.loose >= BUNDLE_KG && B.stack < BALER_STACK) {
+      B.press += dt;
+      if (B.press >= 1.2) { B.press = 0; B.loose -= BUNDLE_KG; B.stack++; pop(BALER.x, BALER.y - 50, 'Bundle pressed', '#f0c35a'); }
+    } else B.press = 0;
+
+    // conveyor from press to truck
+    const T = G.truck, tCap = val('truck');
+    if (T.state === 'depot' && B.stack > 0 && T.load < tCap) {
+      B.conv += dt;
+      if (B.conv >= 0.5) { B.conv = 0; B.stack--; T.load++; if (T.load >= tCap) dispatchTruck(); }
+    } else B.conv = 0;
+
+    // truck trips
+    const tSpeed = [150, 190, 230][G.lv.truck];
+    if (T.state === 'toShed') { T.d += tSpeed * dt; if (T.d >= ROAD_LEN) { T.d = ROAD_LEN; T.state = 'unload'; T.timer = 0; } }
+    else if (T.state === 'unload') {
+      T.timer += dt;
+      if (T.timer >= 0.4 && G.shed.stock < SHED_CAP) {
+        T.timer = 0; T.load--; G.shed.stock++;
+        if (T.load <= 0) { T.load = 0; T.state = 'back'; pop(1040, 220, 'Unloaded at shed', '#f1e9d6'); }
+      }
+    } else if (T.state === 'back') { T.d -= tSpeed * dt; if (T.d <= 0) { T.d = 0; T.state = 'depot'; } }
+
+    // shed pickup and hopper drop for player and loaders
+    G.xfer += dt;
+    const moved = handleCarry(P, val('trolley'));
+    if (moved) G.xfer = 0;
+
+    // hired helpers
+    for (const n of G.npcs) {
+      if (n.kind === 'collector') stepCollector(n, dt); else stepLoader(n, dt);
+    }
+
+    // pellet plant
+    const PL = G.plant;
+    if (PL.hopper > 0) {
+      PL.proc += dt;
+      if (PL.proc >= val('pelletizer')) {
+        PL.proc = 0; PL.hopper--; PL.bags++;
+        G.pellets += PELLET_KG; G.money += PELLET_KG * PRICE;
+        pop(1440, 560, '+' + PELLET_KG + ' kg pellets  ' + fmtRs(PELLET_KG * PRICE), '#f0c35a');
+      }
+    } else PL.proc = 0;
+
+    G.ground = groundKg();
+    if (G.ground >= FIRE_KG) endSeason();
+  }
+
+  function handleCarry(e, cap) {
+    if (G.xfer < 0.25) return false;
+    if (e.needles === 0 && e.bundles < cap && G.shed.stock > 0 && dist(e, SHED) < SHED.r) {
+      G.shed.stock--; e.bundles++; return true;
+    }
+    if (e.bundles > 0 && G.plant.hopper < HOPPER_CAP && dist(e, HOPPER) < HOPPER.r) {
+      e.bundles--; G.plant.hopper++; return true;
+    }
+    return false;
+  }
+
+  function stepCollector(n, dt) {
+    const cap = 10;
+    if (n.needles >= cap - 0.01 || (n.needles > 0 && G.patches.length === 0)) {
+      moveTo(n, BALER.x + 30, BALER.y + 30, 150, dt);
+      return;
+    }
+    let best = null, bd = 1e9;
+    for (const p of G.patches) {
+      const d = Math.hypot(p.x - n.x, p.y - n.y) - p.kg * 6;
+      if (d < bd) { bd = d; best = p; }
+    }
+    if (best) {
+      if (Math.hypot(best.x - n.x, best.y - n.y) > 18) moveTo(n, best.x, best.y, 150, dt);
+      rake(n, cap, 5, dt);
+    } else moveTo(n, BALER.x - 60, BALER.y, 150, dt);
+  }
+
+  function stepLoader(n, dt) {
+    n.cd = (n.cd || 0) + dt;
+    const atShed = dist(n, SHED) < SHED.r - 10;
+    const deliver = n.bundles >= 2 || (n.bundles > 0 && (!atShed || G.shed.stock === 0));
+    if (deliver) {
+      if (dist(n, HOPPER) >= HOPPER.r - 10) moveTo(n, HOPPER.x - 10, HOPPER.y + 20, 160, dt);
+      else if (n.cd > 0.3 && G.plant.hopper < HOPPER_CAP) { n.bundles--; G.plant.hopper++; n.cd = 0; }
+    } else if (!atShed) moveTo(n, SHED.x, SHED.y + 10, 160, dt);
+    else if (n.cd > 0.3 && G.shed.stock > 0) { G.shed.stock--; n.bundles++; n.cd = 0; }
+  }
+
+  function dispatchTruck() {
+    const T = G.truck;
+    if (T.state !== 'depot' || T.load === 0) return;
+    T.state = 'toShed';
+    pop(880, 780, 'Truck left for the shed', '#f1e9d6');
+  }
+
+  function endSeason() {
+    G.over = true; G.running = false;
+    const best = Number(store.get('pirulBest') || 0);
+    if (G.pellets > best) store.set('pirulBest', String(G.pellets));
+    setTimeout(showOver, 1600);
+  }
+
+  // ---------- rendering ----------
+  const cv = document.getElementById('c');
+  const ctx = cv.getContext('2d');
+  let cw = 0, ch = 0, dpr = 1, scale = 1, cam = { x: 0, y: 0 };
+
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    cw = r.width; ch = r.height; dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  }
+  new ResizeObserver(resize).observe(cv);
+
+  function updateCamera() {
+    const fit = Math.min(cw / W, ch / H);
+    // show the whole map when it is readable; on small screens zoom in and follow the player
+    scale = fit >= 0.5 ? fit : Math.max(fit, Math.min(cw, ch) / 640);
+    const vw = cw / scale, vh = ch / scale, P = G.player;
+    cam.x = vw >= W ? (W - vw) / 2 : clamp(P.x - vw / 2, 0, W - vw);
+    cam.y = vh >= H ? (H - vh) / 2 : clamp(P.y - vh / 2, 0, H - vh);
+  }
+
+  function label(text, x, y, size, color, align) {
+    ctx.font = `800 ${size}px "Baloo 2", "Trebuchet MS", sans-serif`;
+    ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(20,30,20,.55)'; ctx.strokeText(text, x, y);
+    ctx.fillStyle = color || '#f1e9d6'; ctx.fillText(text, x, y);
+  }
+
+  function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+
+  function drawGround() {
+    // terraced hillside clearing
+    ctx.fillStyle = '#c3a46a'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(120, 90, 45, .35)'; ctx.lineWidth = 3;
+    for (let y = 40; y < H; y += 70) {
+      ctx.beginPath();
+      for (let x = 660; x <= W; x += 40) { const yy = y + Math.sin(x / 140 + y) * 8; x === 660 ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy); }
+      ctx.stroke();
+    }
+    // forest floor
+    ctx.fillStyle = '#5d5a32';
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(690, 0);
+    for (let y = 0; y <= H; y += 50) ctx.lineTo(680 + Math.sin(y / 70) * 18, y);
+    ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+    for (const s of SPECKS) {
+      if (s.x > 670) continue;
+      ctx.fillStyle = s.c > .5 ? 'rgba(40,45,25,.5)' : 'rgba(140,120,70,.35)';
+      ctx.fillRect(s.x, s.y, s.s, s.s);
+    }
+    // road
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#8c7a5e'; ctx.lineWidth = 58;
+    ctx.beginPath(); ROAD.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x - 40, p.y)); ctx.lineTo(1000, 230); ctx.stroke();
+    ctx.strokeStyle = 'rgba(241,233,214,.35)'; ctx.lineWidth = 3; ctx.setLineDash([18, 16]);
+    ctx.beginPath(); ROAD.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x - 40, p.y)); ctx.lineTo(1000, 230); ctx.stroke();
+    // foot trail shed -> plant
+    ctx.strokeStyle = 'rgba(110, 85, 50, .45)'; ctx.lineWidth = 22; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(SHED.x, SHED.y); ctx.quadraticCurveTo(1200, 560, HOPPER.x, HOPPER.y); ctx.stroke();
+    ctx.lineCap = 'butt';
+  }
+
+  function drawZone(z, active, text) {
+    ctx.save();
+    ctx.setLineDash([10, 8]); ctx.lineWidth = 3;
+    ctx.strokeStyle = active ? 'rgba(240,195,90,.95)' : 'rgba(241,233,214,.45)';
+    ctx.fillStyle = active ? 'rgba(240,195,90,.14)' : 'rgba(241,233,214,.06)';
+    ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    if (text) label(text, z.x, z.y + z.r + 14, 15, active ? '#f0c35a' : '#f1e9d6');
+  }
+
+  const NEEDLE_COLS = ['#c97a35', '#d9a05b', '#a85f2a'];
+  function drawPatches(burning) {
+    for (let c = 0; c < 3; c++) {
+      ctx.strokeStyle = NEEDLE_COLS[c]; ctx.lineWidth = 1.6; ctx.beginPath();
+      for (const p of G.patches) {
+        const r = rng(p.s + c * 7919), n = Math.ceil(p.kg * 3);
+        const spread = 10 + Math.sqrt(p.kg) * 7;
+        for (let i = 0; i < n; i++) {
+          const a = r() * Math.PI * 2, d = Math.sqrt(r()) * spread, ang = r() * Math.PI, len = 7 + r() * 6;
+          const x = p.x + Math.cos(a) * d, y = p.y + Math.sin(a) * d;
+          ctx.moveTo(x - Math.cos(ang) * len / 2, y - Math.sin(ang) * len / 2);
+          ctx.lineTo(x + Math.cos(ang) * len / 2, y + Math.sin(ang) * len / 2);
+        }
+      }
+      ctx.stroke();
+    }
+    if (burning) {
+      const tt = performance.now() / 120;
+      for (const p of G.patches) {
+        for (let i = 0; i < 3; i++) {
+          const fx = p.x + Math.sin(tt + i * 2 + p.s) * 8, fy = p.y - 6 - i * 6;
+          const fr = 8 + p.kg * 1.2 + Math.sin(tt * 1.7 + i + p.s) * 3;
+          ctx.fillStyle = i === 0 ? 'rgba(236,84,52,.75)' : i === 1 ? 'rgba(245,150,50,.7)' : 'rgba(255,220,110,.6)';
+          ctx.beginPath(); ctx.arc(fx, fy, Math.max(2, fr - i * 3), 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    }
+  }
+
+  function drawTrees() {
+    for (const t of TREES) {
+      ctx.fillStyle = 'rgba(20,25,10,.35)';
+      ctx.beginPath(); ctx.ellipse(t.x + 8, t.y + 10, t.rad, t.rad * 0.85, 0, 0, Math.PI * 2); ctx.fill();
+      const layers = [[1, t.shade > .5 ? '#2c5a33' : '#264f2d'], [0.7, '#3a7040'], [0.38, '#4f8a4b']];
+      for (const [k, col] of layers) {
+        ctx.fillStyle = col; ctx.beginPath();
+        const n = t.pts.length;
+        for (let i = 0; i < n; i++) {
+          const a = t.rot + i / n * Math.PI * 2, rr = t.rad * k * t.pts[i];
+          const x = t.x + Math.cos(a) * rr, y = t.y + Math.sin(a) * rr;
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.closePath(); ctx.fill();
+      }
+    }
+  }
+
+  function drawBundle(x, y, s) {
+    s = s || 1;
+    ctx.fillStyle = '#c99a55'; roundRect(x - 13 * s, y - 8 * s, 26 * s, 16 * s, 6 * s); ctx.fill();
+    ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 1.5 * s; ctx.stroke();
+    ctx.strokeStyle = '#5b3a1c'; ctx.lineWidth = 2 * s;
+    ctx.beginPath(); ctx.moveTo(x - 5 * s, y - 8 * s); ctx.lineTo(x - 5 * s, y + 8 * s); ctx.moveTo(x + 5 * s, y - 8 * s); ctx.lineTo(x + 5 * s, y + 8 * s); ctx.stroke();
+  }
+
+  function drawBaler() {
+    const B = G.baler, x = BALER.x, y = BALER.y;
+    drawZone(BALER, G.player.needles > 0 && dist(G.player, BALER) < BALER.r, 'BALING PRESS');
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; roundRect(x - 36, y - 26, 80, 60, 6); ctx.fill();
+    ctx.fillStyle = '#5f6f78'; roundRect(x - 40, y - 32, 80, 56, 6); ctx.fill();
+    ctx.fillStyle = '#7f919b'; roundRect(x - 32, y - 26, 64, 20, 4); ctx.fill();
+    const k = clamp(B.loose / BUNDLE_KG, 0, 1);
+    ctx.fillStyle = '#c97a35'; ctx.fillRect(x - 30, y - 24 + 16 * (1 - k), 60 * 1, 16 * k);
+    const plunge = B.press > 0 ? Math.sin(B.press / 1.2 * Math.PI) * 8 : 0;
+    ctx.fillStyle = '#e1b14a'; ctx.fillRect(x - 34, y - 2 + plunge, 68, 6);
+    label(Math.floor(B.loose) + ' / ' + BUNDLE_KG + ' kg', x, y + 13, 13, '#f1e9d6');
+    // stacked bundles waiting for the truck
+    for (let i = 0; i < B.stack; i++) drawBundle(x + 62 + (i % 4) * 28, y + 34 + Math.floor(i / 4) * 18, 0.95);
+    // conveyor to depot
+    ctx.strokeStyle = 'rgba(60,60,60,.6)'; ctx.lineWidth = 6; ctx.setLineDash([6, 6]);
+    ctx.beginPath(); ctx.moveTo(x + 40, y + 10); ctx.lineTo(850, 800); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  function drawTruck() {
+    const T = G.truck, p = roadAt(T.d), cap = val('truck');
+    let ang = p.ang; if (T.state === 'back') ang += Math.PI;
+    if (T.state === 'depot') ang = 0;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ang);
+    const len = 70 + G.lv.truck * 12;
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; roundRect(-len / 2 + 5, -20, len + 30, 44, 6); ctx.fill();
+    ctx.fillStyle = '#3d6b8c'; roundRect(-len / 2, -22, len, 44, 5); ctx.fill();
+    ctx.fillStyle = '#2b4f68'; ctx.fillRect(-len / 2 + 4, -18, len - 8, 36);
+    ctx.fillStyle = '#e8d9a8'; roundRect(len / 2 + 2, -20, 26, 40, 6); ctx.fill();
+    ctx.fillStyle = '#6c8fa6'; ctx.fillRect(len / 2 + 18, -15, 6, 30);
+    for (let i = 0; i < T.load; i++) {
+      const col = Math.floor(i / 2), row = i % 2;
+      const bx = -len / 2 + 16 + col * 25, by = -9 + row * 18;
+      ctx.save(); ctx.translate(bx, by); drawBundle(0, 0, 0.8); ctx.restore();
+    }
+    ctx.restore();
+    if (T.state === 'depot') label('TRUCK ' + T.load + ' / ' + cap, p.x + 10, p.y + 40, 14, '#f1e9d6');
+  }
+
+  function drawShed() {
+    const x = 1050, y = 110, w = 260, h = 220;
+    drawZone(SHED, G.shed.stock > 0 && G.player.needles === 0 && dist(G.player, SHED) < SHED.r, null);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x + 10, y + 12, w, h);
+    ctx.fillStyle = '#8f9a9e'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(60,70,75,.5)'; ctx.lineWidth = 2;
+    for (let i = 12; i < w; i += 14) { ctx.beginPath(); ctx.moveTo(x + i, y); ctx.lineTo(x + i, y + h); ctx.stroke(); }
+    ctx.fillStyle = '#6d7a80'; ctx.fillRect(x, y + h / 2 - 4, w, 8);
+    // open front with bundles inside
+    ctx.fillStyle = '#4a4134'; ctx.fillRect(x + 60, y + h - 40, 140, 40);
+    const shown = Math.min(G.shed.stock, 10);
+    for (let i = 0; i < shown; i++) drawBundle(x + 78 + (i % 5) * 26, y + h - 28 + Math.floor(i / 5) * 14, 0.8);
+    label('RAW MATERIAL SHED', x + w / 2, y + 40, 18, '#f1e9d6');
+    label(G.shed.stock + ' / ' + SHED_CAP + ' bundles', x + w / 2, y + 66, 14, G.shed.stock ? '#f0c35a' : '#f1e9d6');
+  }
+
+  function drawPlant() {
+    const x = 1300, y = 500, w = 260, h = 300, PL = G.plant;
+    drawZone(HOPPER, G.player.bundles > 0 && dist(G.player, HOPPER) < HOPPER.r, 'HOPPER');
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x + 10, y + 12, w, h);
+    ctx.fillStyle = '#b5574a'; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(90,35,30,.4)'; ctx.lineWidth = 2;
+    for (let i = 14; i < h; i += 16) { ctx.beginPath(); ctx.moveTo(x, y + i); ctx.lineTo(x + w, y + i); ctx.stroke(); }
+    // chimney with smoke while running
+    ctx.fillStyle = '#6b6b6b'; ctx.beginPath(); ctx.arc(x + 210, y + 50, 20, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2d2d2d'; ctx.beginPath(); ctx.arc(x + 210, y + 50, 12, 0, Math.PI * 2); ctx.fill();
+    if (PL.hopper > 0 || PL.proc > 0) {
+      const tt = performance.now() / 600;
+      for (let i = 0; i < 4; i++) {
+        const k = (tt + i / 4) % 1;
+        ctx.fillStyle = `rgba(230,230,225,${0.4 * (1 - k)})`;
+        ctx.beginPath(); ctx.arc(x + 210 + k * 40, y + 50 - k * 70, 10 + k * 18, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    // hopper funnel
+    ctx.fillStyle = '#7b8a90';
+    ctx.beginPath(); ctx.moveTo(x - 20, y + 130); ctx.lineTo(x + 40, y + 130); ctx.lineTo(x + 28, y + 210); ctx.lineTo(x - 8, y + 210); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < Math.min(PL.hopper, 4); i++) drawBundle(x + 10, y + 150 + i * 14, 0.7);
+    label('PELLET PLANT', x + w / 2 + 20, y + 110, 20, '#f1e9d6');
+    label('Hopper ' + PL.hopper + ' / ' + HOPPER_CAP, x + w / 2 + 20, y + 136, 14, PL.hopper ? '#f0c35a' : '#f1e9d6');
+    // progress ring
+    const cx = x + w / 2 + 20, cy = y + 200;
+    ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(40,20,15,.45)'; ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#f0c35a'; ctx.beginPath(); ctx.arc(cx, cy, 26, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (PL.proc / val('pelletizer'))); ctx.stroke();
+    // pellet bags out front
+    const bags = Math.min(PL.bags, 18);
+    for (let i = 0; i < bags; i++) {
+      const bx = x + 40 + (i % 9) * 24, by = y + h + 26 + Math.floor(i / 9) * 22;
+      ctx.fillStyle = '#ede3c8'; roundRect(bx - 10, by - 9, 20, 18, 4); ctx.fill();
+      ctx.fillStyle = '#3a7040'; ctx.fillRect(bx - 6, by - 2, 12, 4);
+    }
+    if (PL.bags) label(PL.bags * PELLET_KG + ' kg pellets bagged', x + w / 2, y + h + 76, 13, '#f1e9d6');
+  }
+
+  function drawPerson(e, cloth, cap, isPlayer) {
+    const bob = Math.sin(e.step / 9) * 1.5;
+    ctx.save(); ctx.translate(e.x, e.y + bob);
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(3, 10, 15, 8, 0, 0, Math.PI * 2); ctx.fill();
+    // doko basket on the back
+    const bx = -Math.cos(e.face) * 12, by = -Math.sin(e.face) * 12;
+    ctx.fillStyle = '#7a5a33'; ctx.beginPath(); ctx.arc(bx, by, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#4e3a20'; ctx.lineWidth = 1.5; ctx.stroke();
+    if (e.needles > 0) { ctx.fillStyle = '#d98a3d'; ctx.beginPath(); ctx.arc(bx, by, 3 + 6 * Math.min(1, e.needles / 10), 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = cloth; ctx.beginPath(); ctx.ellipse(0, 0, 13, 11, e.face, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#b07a52'; ctx.beginPath(); ctx.arc(Math.cos(e.face) * 3, Math.sin(e.face) * 3, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = cap; ctx.beginPath(); ctx.arc(Math.cos(e.face) * 2, Math.sin(e.face) * 2, 5.5, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < e.bundles; i++) drawBundle(0, -16 - i * 12, 0.75);
+    ctx.restore();
+    if (isPlayer) {
+      ctx.fillStyle = '#f0c35a'; ctx.beginPath();
+      const ay = e.y - 30 - e.bundles * 12 + Math.sin(performance.now() / 250) * 2;
+      ctx.moveTo(e.x - 6, ay - 8); ctx.lineTo(e.x + 6, ay - 8); ctx.lineTo(e.x, ay); ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function drawTarget() {
+    const P = G.player; if (P.tx == null) return;
+    ctx.strokeStyle = 'rgba(240,195,90,.8)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(P.tx, P.ty, 10 + Math.sin(performance.now() / 150) * 2, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  function drawPops(dt) {
+    for (const p of G.pops) {
+      p.t += dt;
+      ctx.globalAlpha = clamp(1.6 - p.t, 0, 1);
+      label(p.text, p.x, p.y - p.t * 30, 16, p.color);
+    }
+    ctx.globalAlpha = 1;
+    G.pops = G.pops.filter(p => p.t < 1.6);
+  }
+
+  function render(dt) {
+    updateCamera();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#18301f'; ctx.fillRect(0, 0, cw, ch);
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, -cam.x * scale * dpr, -cam.y * scale * dpr);
+    drawGround();
+    label('CHIR PINE FOREST', 340, 26, 18, 'rgba(241,233,214,.8)');
+    drawPatches(G.over);
+    drawBaler();
+    drawShed();
+    drawPlant();
+    drawTruck();
+    drawTrees();
+    drawTarget();
+    const cols = ['#b8322c', '#d4a020', '#8c3a7a', '#2f7d6d'];
+    for (const n of G.npcs) drawPerson(n, n.kind === 'loader' ? '#3d6b8c' : cols[n.hue % cols.length], n.kind === 'loader' ? '#22313a' : '#f1e9d6', false);
+    drawPerson(G.player, '#e8e1cf', '#2b2b33', true);
+    drawPops(dt);
+    if (G.over) {
+      ctx.fillStyle = `rgba(236,84,52,${0.12 + Math.sin(performance.now() / 200) * 0.05})`;
+      ctx.fillRect(0, 0, 700, H);
+    }
+  }
+
+  // ---------- HUD ----------
+  const $ = id => document.getElementById(id);
+  let hudT = 0;
+  function updateHud() {
+    const P = G.player, T = G.truck, cap = val('basket');
+    $('hMoney').textContent = fmtRs(G.money);
+    $('hPellets').textContent = fmtKg(G.pellets);
+    $('hTime').textContent = fmtTime(G.t);
+    const risk = clamp(G.ground / FIRE_KG, 0, 1);
+    $('hRiskBar').style.width = (risk * 100).toFixed(1) + '%';
+    $('hRiskLabel').textContent = 'Fire risk ' + Math.round(risk * 100) + '%';
+    $('hRisk').classList.toggle('hot', risk >= 0.7);
+    $('hCarry').textContent = P.bundles > 0
+      ? 'Carrying ' + P.bundles + ' / ' + val('trolley') + (val('trolley') > 1 ? ' bundles' : ' bundle')
+      : 'Doko ' + P.needles.toFixed(1) + ' / ' + cap + ' kg';
+    const tb = $('truckBtn');
+    tb.disabled = !(T.state === 'depot' && T.load > 0);
+    tb.textContent = T.state === 'depot' ? 'Send truck (' + T.load + '/' + val('truck') + ')' : 'Truck on the road';
+    $('hHint').textContent = hint();
+  }
+
+  function hint() {
+    const P = G.player, T = G.truck, cap = val('basket');
+    if (G.over) return 'The forest is burning.';
+    if (P.bundles > 0) return G.plant.hopper >= HOPPER_CAP ? 'The hopper is full. Wait for the plant to catch up.' : 'Carry the bundles to the pellet plant hopper.';
+    if (P.needles >= cap - 0.01) return 'Your doko is full. Empty it at the baling press.';
+    if (G.ground / FIRE_KG >= 0.7) return 'Fire risk is high. Rake pirul fast, or hire collectors.';
+    if (P.needles > 0 && dist(P, SHED) < SHED.r && G.shed.stock > 0) return 'Empty your doko at the baling press before carrying bundles.';
+    if (P.needles > 0) return 'Keep raking, or empty your doko at the baling press.';
+    if (G.shed.stock > 0) return G.shed.stock + (G.shed.stock > 1 ? ' bundles are' : ' bundle is') + ' waiting at the shed. Carry ' + (G.shed.stock > 1 ? 'them' : 'it') + ' to the plant.';
+    if (T.state === 'depot' && T.load > 0 && G.baler.stack === 0) return 'The truck has ' + T.load + (T.load > 1 ? ' bundles' : ' bundle') + '. Send it to the shed, or fill it up.';
+    if (T.state !== 'depot' && T.load > 0) return 'The truck is taking bundles to the shed.';
+    return 'Walk over the fallen pine needles to rake them up.';
+  }
+
+  // ---------- upgrades ----------
+  function renderUpgrades() {
+    $('upMoney').textContent = fmtRs(G.money) + ' to spend';
+    const list = $('upList'); list.textContent = '';
+    for (const k of Object.keys(UP)) {
+      const u = UP[k], lv = G.lv[k], maxed = lv >= u.cost.length;
+      const row = document.createElement('div'); row.className = 'up';
+      const name = document.createElement('div'); name.className = 'name'; name.textContent = u.name;
+      const desc = document.createElement('div'); desc.className = 'desc'; desc.textContent = u.desc;
+      const lvl = document.createElement('div'); lvl.className = 'lvl';
+      lvl.textContent = maxed ? 'Now ' + u.fmt(u.vals[lv]) + ' (maximum)' : 'Now ' + u.fmt(u.vals[lv]) + ', next ' + u.fmt(u.vals[lv + 1]);
+      const b = document.createElement('button'); b.className = 'btn' + (!maxed && G.money >= u.cost[lv] ? ' primary' : '');
+      b.id = 'buy-' + k;
+      b.textContent = maxed ? 'Done' : 'Buy ' + fmtRs(u.cost[lv]);
+      b.disabled = maxed || G.money < u.cost[lv];
+      b.addEventListener('click', () => buy(k));
+      row.append(name, b, desc, lvl); list.append(row);
+    }
+  }
+  function buy(k) {
+    const u = UP[k], lv = G.lv[k];
+    if (lv >= u.cost.length || G.money < u.cost[lv]) return;
+    G.money -= u.cost[lv]; G.lv[k]++;
+    if (k === 'collector') addNpc('collector');
+    if (k === 'loader') addNpc('loader');
+    renderUpgrades(); updateHud();
+  }
+  function openUpgrades() { if (!G.running) return; G.paused = true; renderUpgrades(); $('upOv').hidden = false; $('upClose').focus(); }
+  function closeUpgrades() { $('upOv').hidden = true; G.paused = false; }
+
+  // ---------- screens ----------
+  function showStart() {
+    const best = Number(store.get('pirulBest') || 0);
+    $('bestLine').textContent = best ? 'Your best season: ' + fmtKg(best) + ' of pellets' : '';
+    $('startOv').hidden = false;
+  }
+  function startGame() {
+    newGame(); G.running = true;
+    $('startOv').hidden = true; $('overOv').hidden = true; $('upOv').hidden = true;
+    updateHud();
+  }
+  function showOver() {
+    $('oTime').textContent = fmtTime(G.t);
+    $('oCollected').textContent = fmtKg(G.collected);
+    $('oPellets').textContent = fmtKg(G.pellets);
+    $('oMoney').textContent = fmtRs(G.money);
+    $('overBest').textContent = 'Best season: ' + fmtKg(Number(store.get('pirulBest') || 0)) + ' of pellets';
+    $('overOv').hidden = false; $('againBtn').focus();
+  }
+
+  // ---------- input ----------
+  let dragging = false;
+  function pointTo(ev) {
+    const r = cv.getBoundingClientRect();
+    G.player.tx = clamp((ev.clientX - r.left) / scale + cam.x, 16, W - 16);
+    G.player.ty = clamp((ev.clientY - r.top) / scale + cam.y, 16, H - 16);
+  }
+  cv.addEventListener('pointerdown', ev => { if (!G.running || G.paused) return; dragging = true; cv.setPointerCapture(ev.pointerId); pointTo(ev); });
+  cv.addEventListener('pointermove', ev => { if (dragging && G.running && !G.paused) pointTo(ev); });
+  const stopDrag = () => { dragging = false; };
+  cv.addEventListener('pointerup', stopDrag); cv.addEventListener('pointercancel', stopDrag);
+
+  window.addEventListener('keydown', ev => {
+    const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+    if (k === 'Escape' && !$('upOv').hidden) { closeUpgrades(); return; }
+    if (!G.running) return;
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'w', 'a', 's', 'd'].includes(k)) { keys.add(k); ev.preventDefault(); }
+    if (k === 't') dispatchTruck();
+    if (k === 'u') openUpgrades();
+  });
+  window.addEventListener('keyup', ev => keys.delete(ev.key.length === 1 ? ev.key.toLowerCase() : ev.key));
+  window.addEventListener('blur', () => keys.clear());
+
+  $('startBtn').addEventListener('click', startGame);
+  $('againBtn').addEventListener('click', startGame);
+  $('truckBtn').addEventListener('click', dispatchTruck);
+  $('upBtn').addEventListener('click', openUpgrades);
+  $('upClose').addEventListener('click', closeUpgrades);
+
+  // ---------- loop ----------
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (G.running && !G.paused) step(dt);
+    if (cw > 0) render(G.paused ? 0 : dt);
+    hudT += dt;
+    if (hudT > 0.1) { hudT = 0; updateHud(); }
+    requestAnimationFrame(frame);
+  }
+
+  function boot(data) {
+    newGame();
+    if (data && data.save) {
+      G = data.save;
+      $('startOv').hidden = G.running || G.over;
+      if (G.paused) { G.paused = false; }
+    } else showStart();
+    resize(); updateHud();
+    requestAnimationFrame(frame);
+  }
+  window.claude?.hot?.snapshot?.(() => ({ save: JSON.parse(JSON.stringify(G)) }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
