@@ -420,8 +420,8 @@ SAVINGS CALCULATOR
   </div>
 
   <div className="stat-content">
-    <h3>4603</h3>
-    <p>Kcal/kg GCV</p>
+    <h3>4,603</h3>
+    <p>kcal/kg GCV</p>
   </div>
 </div>
 
@@ -431,8 +431,8 @@ SAVINGS CALCULATOR
   </div>
 
 <div className="stat-content">
-    <h3>5616 MT</h3>
-    <p>Annual Capacity</p>
+    <h3>5,600+</h3>
+    <p>MT Annual Capacity</p>
   </div>
 </div>
 
@@ -685,8 +685,8 @@ SAVINGS CALCULATOR
     <div className="product-spec-grid">
 
       <div className="product-spec-card">
-        <h3>4603</h3>
-        <span>Kcal/kg GCV</span>
+        <h3>4,603</h3>
+        <span>kcal/kg GCV</span>
       </div>
 
       <div className="product-spec-card">
