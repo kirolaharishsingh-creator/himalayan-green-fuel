@@ -1,6 +1,6 @@
 # Pirul to Pellet
 
-A browser game about Himalayan Green Fuel's work. You rake fallen pine needles (pirul) in a chir pine forest and empty them at a baling press. A truck takes the bundles to the raw material shed. From there you carry them to the pellet plant, which turns each bundle into pellets. If too much pirul piles up on the forest floor, a fire starts and the season ends.
+A browser game about Himalayan Green Fuel's work, set in a valley modelled on the plant at Someshwar. You rake fallen pine needles (pirul) in a chir pine forest and empty them at a baling press. A truck takes the bundles to the raw material shed. From there you carry them to the pellet plant, which turns each bundle into pellets. If too much pirul piles up on the forest floor, a fire starts and the season ends.
 
 It is a single self-contained file, `index.html`, with no build step and no dependencies. Open it in any browser, or serve the folder:
 

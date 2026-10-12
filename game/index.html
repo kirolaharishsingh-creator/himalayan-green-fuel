@@ -193,11 +193,11 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   const PELLET_KG = 17;         // kg of pellets per bundle (after drying losses)
   const PRICE = 9;              // ₹ per kg of pellets
   const SHED_CAP = 40, HOPPER_CAP = 8, BALER_STACK = 8;
-  const FOREST = { x0: 40, y0: 50, x1: 640, y1: 960 };
-  const BALER = { x: 745, y: 650, r: 72 };
-  const SHED = { x: 1180, y: 380, r: 72 };        // pickup zone in front of the shed door
-  const HOPPER = { x: 1255, y: 670, r: 70 };       // plant hopper zone
-  const ROAD = [{ x: 880, y: 820 }, { x: 1000, y: 820 }, { x: 1000, y: 280 }];
+  const FOREST = { x0: 40, y0: 50, x1: 540, y1: 960 };
+  const BALER = { x: 575, y: 610, r: 72 };
+  const SHED = { x: 1150, y: 365, r: 72 };        // pickup zone in front of the shed door
+  const HOPPER = { x: 1250, y: 615, r: 70 };       // plant hopper zone
+  const ROAD = [{ x: 560, y: 830 }, { x: 990, y: 830 }, { x: 990, y: 290 }];
 
   const UP = {
     basket:     { name: 'Bigger doko', desc: 'Carry more loose pirul in your basket.', vals: [10, 15, 20, 30], cost: [250, 450, 800], fmt: v => v + ' kg' },
@@ -242,15 +242,15 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   (() => {
     const r = rng(11);
     let tries = 0;
-    while (TREES.length < 48 && tries++ < 4000) {
+    while (TREES.length < 42 && tries++ < 4000) {
       const t = { x: FOREST.x0 + 10 + r() * (FOREST.x1 - FOREST.x0 - 10), y: FOREST.y0 - 10 + r() * (FOREST.y1 - FOREST.y0 + 20), rad: 26 + r() * 16 };
-      if (TREES.some(o => dist(o, t) < o.rad + t.rad + 26)) continue;
+      if (TREES.some(o => dist(o, t) < o.rad + t.rad + 26) || dist(t, BALER) < 95 || dist(t, ROAD[0]) < 110) continue;
       const s = r();
       t.kind = s < 0.74 ? 'chir' : s < 0.88 ? 'banj' : 'buransh';
       t.seed = Math.floor(r() * 1e9);
       TREES.push(t);
     }
-    for (const [x, y, kind, rad] of [[1590, 40, 'banj', 30], [1345, 440, 'chir', 30], [1585, 430, 'buransh', 26], [960, 60, 'chir', 28], [700, 965, 'chir', 30]]) {
+    for (const [x, y, kind, rad] of [[1590, 40, 'banj', 30], [1345, 425, 'chir', 30], [1585, 430, 'buransh', 26], [900, 60, 'chir', 28], [870, 960, 'chir', 30], [840, 130, 'chir', 30], [870, 420, 'chir', 32], [845, 650, 'chir', 28], [1110, 960, 'banj', 28], [1200, 30, 'chir', 26]]) {
       TREES.push({ x, y, kind, rad, seed: x * 7 + y });
     }
   })();
@@ -267,9 +267,13 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     let g;
     [bgLayer, g] = makeLayer(W, H + SKY);
     g.translate(0, SKY);
-    drawSkyline(g); drawGround(g); drawVillage(g);
+    drawSkyline(g);
+    g.save(); g.beginPath(); g.rect(0, 0, W, H); g.clip();
+    drawGround(g); drawVillage(g);
+    g.restore();
     [treeLayer, g] = makeLayer(W, H);
     for (const t of TREES) drawTree(g, t);
+    drawBridge(g); drawPowerLine(g);
   }
 
   function ridge(r, step, base, amp, bumps) {
@@ -328,94 +332,189 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     }
   }
 
+  // valley geometry, modelled on the plant at Someshwar: a gadhera (stream) under a steel truss
+  // bridge, a motor road lined with white parapet blocks, and green hillsides of chir pine
+  const streamX = y => 722 + Math.sin(y / 130) * 30 + Math.sin(y / 53) * 8;
+  const forestEdge = y => 612 + Math.sin(y / 70) * 14;
+  const ROAD_N = [{ x: 990, y: 290 }, { x: 990, y: 200 }, { x: 962, y: 110 }, { x: 990, y: -10 }];
+  const ROAD_E = [{ x: 990, y: 830 }, { x: 1150, y: 900 }, { x: 1610, y: 975 }];
+
+  function tracePath(g, pts) { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y)); }
+  function rock(g, x, y, s, a) {
+    g.fillStyle = 'rgba(30,25,15,.35)'; g.beginPath(); g.ellipse(x + 3, y + 4, s * 1.1, s * 0.8, a, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#8f8d84'; g.beginPath(); g.ellipse(x, y, s * 1.1, s * 0.8, a, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#bcb9ad'; g.beginPath(); g.ellipse(x - s * 0.3, y - s * 0.25, s * 0.5, s * 0.35, a, 0, Math.PI * 2); g.fill();
+  }
+  function parapets(g, pts) {
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1], len = dist(a, b), ang = Math.atan2(b.y - a.y, b.x - a.x);
+      const nx = -Math.sin(ang) * 34, ny = Math.cos(ang) * 34;
+      for (let d = 10; d < len; d += 30) {
+        const x = a.x + Math.cos(ang) * d + nx, y = a.y + Math.sin(ang) * d + ny;
+        if (Math.abs(x - streamX(y)) < 75 || y < 2 || x > W) continue;
+        g.save(); g.translate(x, y); g.rotate(ang);
+        g.fillStyle = 'rgba(30,30,30,.3)'; g.fillRect(-4, -1, 14, 8);
+        g.fillStyle = '#f2f2ee'; g.fillRect(-7, -4, 14, 8);
+        g.fillStyle = '#2a2a2a'; g.fillRect(-1, -4, 2, 8);
+        g.restore();
+      }
+    }
+  }
+
   function drawGround(g) {
     const r = rng(5);
-    // terraced fields on the open hillside, each step held up by a dry-stone wall
-    g.fillStyle = '#b89a62'; g.fillRect(0, 0, W, H);
-    const CROPS = ['#c9a96b', '#a7b45e', '#d8bb4a', '#bfa064', '#93a95a', '#c4a46e'];
+    // grassy hillside with faint old terraces
+    g.fillStyle = '#86994f'; g.fillRect(0, 0, W, H);
+    const GRASS = ['#7f9a4c', '#8fa553', '#a39c5c', '#6f8c45', '#b0a466', '#86a050'];
     const edge = (x, y) => y + Math.sin(x / 150 + y * 0.7) * 10 + Math.sin(x / 47 + y) * 3;
-    const curve = (y, dy) => { g.beginPath(); for (let x = 660; x <= W; x += 20) { const yy = edge(x, y) + dy; x === 660 ? g.moveTo(x, yy) : g.lineTo(x, yy); } };
+    const curve = (y, dy) => { g.beginPath(); for (let x = 600; x <= W; x += 20) { const yy = edge(x, y) + dy; x === 600 ? g.moveTo(x, yy) : g.lineTo(x, yy); } };
     for (let y = -20; y < H; y += 64) {
-      g.fillStyle = CROPS[Math.floor(r() * CROPS.length)];
+      g.fillStyle = GRASS[Math.floor(r() * GRASS.length)];
       g.beginPath();
-      for (let x = 660; x <= W; x += 20) { const yy = edge(x, y); x === 660 ? g.moveTo(x, yy) : g.lineTo(x, yy); }
-      for (let x = W; x >= 660; x -= 20) g.lineTo(x, edge(x, y + 64));
+      for (let x = 600; x <= W; x += 20) { const yy = edge(x, y); x === 600 ? g.moveTo(x, yy) : g.lineTo(x, yy); }
+      for (let x = W; x >= 600; x -= 20) g.lineTo(x, edge(x, y + 64));
       g.closePath(); g.fill();
-      g.strokeStyle = 'rgba(70,60,30,.16)'; g.lineWidth = 2;
-      for (let k = 14; k < 60; k += 12) { curve(y, k); g.stroke(); }
-      g.lineWidth = 6; g.strokeStyle = '#857a66'; curve(y + 64, 0); g.stroke();
-      g.lineWidth = 2; g.strokeStyle = '#bdb19a'; curve(y + 64, -3); g.stroke();
+      g.lineWidth = 3; g.strokeStyle = 'rgba(90,85,55,.35)'; curve(y + 64, 0); g.stroke();
     }
+    // dry grass and scrub on the open slopes
+    for (let i = 0; i < 160; i++) {
+      const x = 620 + r() * (W - 620), y = r() * H;
+      g.fillStyle = i % 3 ? 'rgba(176,160,96,.4)' : 'rgba(80,110,55,.45)';
+      g.beginPath(); g.ellipse(x, y, 14 + r() * 30, 8 + r() * 14, r() * Math.PI, 0, Math.PI * 2); g.fill();
+    }
+    g.strokeStyle = 'rgba(70,95,45,.55)'; g.lineWidth = 1.3; g.beginPath();
+    for (let i = 0; i < 160; i++) {
+      const x = 620 + r() * (W - 620), y = r() * H;
+      for (let k = -2; k <= 2; k++) { g.moveTo(x, y); g.lineTo(x + k * 3, y - 6 - r() * 4); }
+    }
+    g.stroke();
 
-    // forest floor, carpeted in old pirul
-    const fx = y => 680 + Math.sin(y / 70) * 18;
-    g.fillStyle = '#6e5634';
-    g.beginPath(); g.moveTo(0, 0); g.lineTo(fx(0), 0);
-    for (let y = 0; y <= H; y += 25) g.lineTo(fx(y), y);
+    // forest floor: grass, dry patches and old pirul
+    g.fillStyle = '#76683d';
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(forestEdge(0), 0);
+    for (let y = 0; y <= H; y += 25) g.lineTo(forestEdge(y), y);
     g.lineTo(0, H); g.closePath(); g.fill();
     g.save(); g.clip();
-    const FLOOR = ['rgba(128,84,44,.45)', 'rgba(88,92,48,.4)', 'rgba(70,58,34,.45)', 'rgba(150,104,56,.35)'];
+    const FLOOR = ['rgba(105,140,70,.45)', 'rgba(160,135,80,.4)', 'rgba(70,62,36,.4)', 'rgba(140,92,48,.35)'];
     for (let i = 0; i < 320; i++) {
       g.fillStyle = FLOOR[i % 4]; g.beginPath();
-      g.ellipse(r() * 720, r() * H, 18 + r() * 46, 10 + r() * 26, r() * Math.PI, 0, Math.PI * 2); g.fill();
+      g.ellipse(r() * 640, r() * H, 18 + r() * 46, 10 + r() * 26, r() * Math.PI, 0, Math.PI * 2); g.fill();
     }
     g.lineWidth = 1.1;
-    for (const col of ['rgba(176,112,58,.35)', 'rgba(110,72,38,.4)', 'rgba(200,150,90,.22)']) {
+    for (const col of ['rgba(176,112,58,.32)', 'rgba(110,72,38,.35)', 'rgba(200,150,90,.22)']) {
       g.strokeStyle = col; g.beginPath();
-      for (let i = 0; i < 1400; i++) {
-        const x = r() * 720, y = r() * H, a = r() * Math.PI, l = 5 + r() * 6;
+      for (let i = 0; i < 900; i++) {
+        const x = r() * 640, y = r() * H, a = r() * Math.PI, l = 5 + r() * 6;
         g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l);
       }
       g.stroke();
     }
-    g.strokeStyle = 'rgba(120,140,70,.5)'; g.lineWidth = 1.4; g.beginPath();
-    for (let i = 0; i < 90; i++) {
-      const x = r() * 700, y = r() * H;
+    g.strokeStyle = 'rgba(95,130,60,.6)'; g.lineWidth = 1.4; g.beginPath();
+    for (let i = 0; i < 120; i++) {
+      const x = r() * 620, y = r() * H;
       for (let k = -2; k <= 2; k++) { g.moveTo(x, y); g.lineTo(x + k * 3, y - 7 - r() * 4); }
     }
     g.stroke();
-    // fallen pine cones
     for (let i = 0; i < 45; i++) {
-      const x = r() * 680, y = r() * H, a = r() * Math.PI;
+      const x = r() * 600, y = r() * H, a = r() * Math.PI;
       g.fillStyle = '#5a3a1e'; g.beginPath(); g.ellipse(x, y, 4.5, 2.8, a, 0, Math.PI * 2); g.fill();
       g.fillStyle = '#8a5a30'; g.beginPath(); g.ellipse(x - 1, y - 1, 2.2, 1.3, a, 0, Math.PI * 2); g.fill();
     }
-    // boulders
-    for (let i = 0; i < 22; i++) {
+    for (let i = 0; i < 18; i++) {
       let x, y, n = 0;
-      do { x = 40 + r() * 600; y = 30 + r() * (H - 60); } while (inCanopy(x, y, 6) && ++n < 20);
-      const s = 6 + r() * 12, a = r();
-      g.fillStyle = 'rgba(30,25,15,.35)'; g.beginPath(); g.ellipse(x + 3, y + 4, s * 1.1, s * 0.8, a, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#8a877c'; g.beginPath(); g.ellipse(x, y, s * 1.1, s * 0.8, a, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#b3afa1'; g.beginPath(); g.ellipse(x - s * 0.3, y - s * 0.25, s * 0.5, s * 0.35, a, 0, Math.PI * 2); g.fill();
+      do { x = 40 + r() * 500; y = 30 + r() * (H - 60); } while (inCanopy(x, y, 6) && ++n < 20);
+      rock(g, x, y, 6 + r() * 12, r());
     }
     g.restore();
-    // kilmora and lantana scrub along the forest margin
     for (let y = 10; y < H; y += 34) {
-      const x = fx(y) + (r() - 0.5) * 16;
+      const x = forestEdge(y) + (r() - 0.5) * 16;
       g.fillStyle = '#4f6a3a'; g.beginPath(); g.arc(x, y, 9 + r() * 6, 0, Math.PI * 2); g.fill();
       g.fillStyle = '#617d45'; g.beginPath(); g.arc(x - 3, y - 3, 5 + r() * 3, 0, Math.PI * 2); g.fill();
     }
 
-    // motor road with tyre ruts
+    // bare earth around the baling press, and the pellet yard below the plant
+    g.fillStyle = 'rgba(160,128,84,.75)';
+    g.beginPath(); g.ellipse(560, 715, 92, 155, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(1430, 815, 175, 62, 0, 0, Math.PI * 2); g.fill();
+
+    // the gadhera: gravel bed, water, ripples and boulders
+    const sPts = [];
+    for (let y = -20; y <= H + 20; y += 20) sPts.push({ x: streamX(y), y });
     g.lineCap = 'round'; g.lineJoin = 'round';
-    const road = () => { g.beginPath(); ROAD.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x - 40, p.y)); g.lineTo(1000, 230); };
-    g.strokeStyle = '#7a6a52'; g.lineWidth = 64; road(); g.stroke();
-    g.strokeStyle = '#9a8566'; g.lineWidth = 56; road(); g.stroke();
-    g.strokeStyle = 'rgba(90,75,55,.45)'; g.lineWidth = 4;
-    for (const off of [-12, 12]) {
-      g.save(); g.translate(off * 0.7, off * 0.7); road(); g.stroke(); g.restore();
+    g.strokeStyle = '#8d8677'; g.lineWidth = 80; tracePath(g, sPts); g.stroke();
+    g.strokeStyle = '#a7a08d'; g.lineWidth = 62; tracePath(g, sPts); g.stroke();
+    g.strokeStyle = '#5c8394'; g.lineWidth = 30; tracePath(g, sPts); g.stroke();
+    g.strokeStyle = '#7ea6b3'; g.lineWidth = 16; tracePath(g, sPts); g.stroke();
+    g.strokeStyle = 'rgba(235,245,248,.75)'; g.lineWidth = 1.5;
+    for (let i = 0; i < 170; i++) {
+      const y = r() * H, x = streamX(y) + (r() - 0.5) * 22;
+      g.beginPath(); g.moveTo(x - 4, y); g.quadraticCurveTo(x, y - 3, x + 4, y); g.stroke();
     }
+    for (let i = 0; i < 80; i++) {
+      const y = r() * H, side = r() < 0.5 ? -1 : 1;
+      rock(g, streamX(y) + side * (12 + r() * 26), y, 4 + r() * 10, r());
+    }
+
+    // motor road: asphalt with white parapet blocks
+    const main = [{ x: 520, y: 830 }, ...ROAD.slice(1), ...ROAD_N.slice(1)];
+    for (const [pts, w, col] of [[main, 66, '#55595b'], [ROAD_E, 66, '#55595b'], [main, 56, '#727779'], [ROAD_E, 56, '#727779']]) {
+      g.strokeStyle = col; g.lineWidth = w; tracePath(g, pts); g.stroke();
+    }
+    g.strokeStyle = 'rgba(255,255,255,.08)'; g.lineWidth = 3;
+    for (const pts of [main, ROAD_E]) { tracePath(g, pts); g.stroke(); }
+    // stone retaining wall where the road leaves the bridge
+    g.fillStyle = '#9c9b90'; g.fillRect(790, 860, 170, 16);
+    g.strokeStyle = 'rgba(60,60,55,.45)'; g.lineWidth = 1;
+    for (let x = 790; x < 960; x += 17) { g.beginPath(); g.moveTo(x, 860); g.lineTo(x, 876); g.stroke(); }
+    g.beginPath(); g.moveTo(790, 868); g.lineTo(960, 868); g.stroke();
+    parapets(g, ROAD); parapets(g, ROAD_N); parapets(g, ROAD_E);
+
     // footpaths: shed to plant, and up to the village
-    g.strokeStyle = 'rgba(110, 85, 50, .45)'; g.lineWidth = 22;
-    g.beginPath(); g.moveTo(SHED.x, SHED.y); g.quadraticCurveTo(1200, 560, HOPPER.x, HOPPER.y); g.stroke();
+    g.strokeStyle = 'rgba(150, 120, 80, .6)'; g.lineWidth = 22;
+    g.beginPath(); g.moveTo(SHED.x, SHED.y); g.quadraticCurveTo(1170, 500, HOPPER.x, HOPPER.y); g.stroke();
     g.lineWidth = 12;
     g.beginPath(); g.moveTo(SHED.x + 40, SHED.y); g.quadraticCurveTo(1380, 330, 1430, 250); g.lineTo(1420, 150); g.stroke();
     g.lineCap = 'butt';
-    // shade where the hillside meets the skyline
     const sh = g.createLinearGradient(0, 0, 0, 36);
     sh.addColorStop(0, 'rgba(30,40,30,.35)'); sh.addColorStop(1, 'rgba(30,40,30,0)');
     g.fillStyle = sh; g.fillRect(0, 0, W, 36);
+  }
+
+  // green steel truss bridge, drawn over the road so the truck passes under its cross-bracing
+  function drawBridge(g) {
+    const y = ROAD[0].y, cx = streamX(y), x0 = cx - 60, x1 = cx + 60, n = 4;
+    g.strokeStyle = 'rgba(20,30,30,.28)'; g.lineWidth = 5;
+    for (const dy of [-30, 30]) { g.beginPath(); g.moveTo(x0 + 10, y + dy + 12); g.lineTo(x1 + 10, y + dy + 12); g.stroke(); }
+    g.strokeStyle = '#3d7550'; g.lineWidth = 2;
+    g.beginPath();
+    for (let i = 0; i < n; i++) {
+      const xa = x0 + i * (x1 - x0) / n, xb = xa + (x1 - x0) / n;
+      g.moveTo(xa, y - 30); g.lineTo(xb, y + 30); g.moveTo(xa, y + 30); g.lineTo(xb, y - 30);
+    }
+    g.stroke();
+    g.strokeStyle = '#2b5737'; g.lineWidth = 3;
+    g.beginPath();
+    for (let i = 0; i <= n; i++) { const x = x0 + i * (x1 - x0) / n; g.moveTo(x, y - 30); g.lineTo(x, y + 30); }
+    g.stroke();
+    g.lineWidth = 7;
+    for (const dy of [-30, 30]) { g.beginPath(); g.moveTo(x0, y + dy); g.lineTo(x1, y + dy); g.stroke(); }
+  }
+
+  // electricity poles and wires across the hillside
+  function drawPowerLine(g) {
+    const POLES = [[1610, 650], [1585, 300], [1335, 70], [1160, -10]];
+    g.strokeStyle = 'rgba(25,25,25,.55)'; g.lineWidth = 1;
+    for (let i = 0; i < POLES.length - 1; i++) {
+      const [ax, ay] = POLES[i], [bx, by] = POLES[i + 1];
+      for (const o of [-4, 4]) {
+        g.beginPath(); g.moveTo(ax + o, ay); g.quadraticCurveTo((ax + bx) / 2 + o, (ay + by) / 2 + 14, bx + o, by); g.stroke();
+      }
+    }
+    for (const [x, y] of POLES) {
+      g.fillStyle = 'rgba(20,20,20,.3)'; g.fillRect(x + 4, y + 4, 7, 7);
+      g.fillStyle = '#6a6a64'; g.fillRect(x - 3, y - 3, 7, 7);
+      g.fillStyle = '#3a3a36'; g.fillRect(x - 8, y - 1, 17, 3);
+    }
   }
 
   function slateHouse(g, x, y, w, h) {
@@ -462,6 +561,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     g.fillStyle = 'rgba(25,20,10,.32)'; g.beginPath(); g.ellipse(t.x + 10, t.y + 12, R * 1.02, R * 0.85, 0, 0, TAU); g.fill();
     if (t.kind === 'chir') {
       // reddish trunk, then open tufts of long blue-green needles
+      g.strokeStyle = 'rgba(25,20,10,.28)'; g.lineWidth = 5; g.beginPath(); g.moveTo(t.x + 6, t.y + 16); g.lineTo(t.x + 40, t.y + 52); g.stroke();
       g.strokeStyle = '#7a4128'; g.lineWidth = 6; g.lineCap = 'round';
       g.beginPath(); g.moveTo(t.x, t.y); g.lineTo(t.x + 7, t.y + 17); g.stroke(); g.lineCap = 'butt';
       const n = 6 + Math.floor(r() * 3), tufts = [[0, 0]];
@@ -502,7 +602,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     G = {
       t: 0, money: 0, pellets: 0, collected: 0, ground: 0, rand: 99,
       running: false, over: false, paused: false,
-      player: { x: 770, y: 540, tx: null, ty: null, needles: 0, bundles: 0, face: 0, step: 0 },
+      player: { x: 640, y: 560, tx: null, ty: null, needles: 0, bundles: 0, face: 0, step: 0 },
       patches: [], fallAcc: 0, pops: [],
       baler: { loose: 0, stack: 0, press: 0, conv: 0 },
       truck: { state: 'depot', load: 0, d: 0, timer: 0 },
@@ -520,7 +620,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   function spawnNeedles(kg) {
     let x, y, tries = 0;
     do {
-      x = FOREST.x0 + 10 + rand() * (FOREST.x1 - FOREST.x0 + 30);
+      x = FOREST.x0 + 10 + rand() * (FOREST.x1 - FOREST.x0);
       y = FOREST.y0 + 10 + rand() * (FOREST.y1 - FOREST.y0 - 20);
     } while (inCanopy(x, y, 8) && ++tries < 20);
     const near = G.patches.find(p => Math.hypot(p.x - x, p.y - y) < 38 && p.kg < 8);
@@ -553,7 +653,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   }
 
   function addNpc(kind) {
-    G.npcs.push({ kind, x: kind === 'loader' ? 1150 : 760, y: kind === 'loader' ? 450 : 600 + G.npcs.length * 20, needles: 0, bundles: 0, face: 0, step: 0, tx: null, ty: null, hue: G.npcs.length });
+    G.npcs.push({ kind, x: kind === 'loader' ? 1150 : 640, y: kind === 'loader' ? 450 : 600 + G.npcs.length * 20, needles: 0, bundles: 0, face: 0, step: 0, tx: null, ty: null, hue: G.npcs.length });
   }
 
   const keys = new Set();
@@ -632,7 +732,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
       if (PL.proc >= val('pelletizer')) {
         PL.proc = 0; PL.hopper--; PL.bags++;
         G.pellets += PELLET_KG; G.money += PELLET_KG * PRICE;
-        pop(1440, 560, '+' + PELLET_KG + ' kg pellets  ' + fmtRs(PELLET_KG * PRICE), '#f0c35a');
+        pop(1430, 520, '+' + PELLET_KG + ' kg pellets  ' + fmtRs(PELLET_KG * PRICE), '#f0c35a');
       }
     } else PL.proc = 0;
 
@@ -683,7 +783,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     const T = G.truck;
     if (T.state !== 'depot' || T.load === 0) return;
     T.state = 'toShed';
-    pop(880, 780, 'Truck left for the shed', '#f1e9d6');
+    pop(600, 780, 'Truck left for the shed', '#f1e9d6');
   }
 
   function endSeason() {
@@ -785,10 +885,10 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     ctx.fillStyle = '#e1b14a'; ctx.fillRect(x - 34, y - 2 + plunge, 68, 6);
     label(Math.floor(B.loose) + ' / ' + BUNDLE_KG + ' kg', x, y + 13, 13, '#f1e9d6');
     // stacked bundles waiting for the truck
-    for (let i = 0; i < B.stack; i++) drawBundle(x + 62 + (i % 4) * 28, y + 34 + Math.floor(i / 4) * 18, 0.95);
+    for (let i = 0; i < B.stack; i++) drawBundle(x - 40 + (i % 4) * 27, y + 50 + Math.floor(i / 4) * 18, 0.95);
     // conveyor to depot
     ctx.strokeStyle = 'rgba(60,60,60,.6)'; ctx.lineWidth = 6; ctx.setLineDash([6, 6]);
-    ctx.beginPath(); ctx.moveTo(x + 40, y + 10); ctx.lineTo(850, 800); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x, y + 30); ctx.lineTo(545, 805); ctx.stroke(); ctx.setLineDash([]);
   }
 
   function drawTruck() {
@@ -811,58 +911,79 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     if (T.state === 'depot') label('TRUCK ' + T.load + ' / ' + cap, p.x + 10, p.y + 40, 14, '#f1e9d6');
   }
 
+  function hipRoof(x, y, w, h, faces) {
+    const k = Math.min(w, h) * 0.45, ry = y + h / 2;
+    const poly = (pts, col) => { ctx.fillStyle = col; ctx.beginPath(); pts.forEach(([px, py], i) => i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)); ctx.closePath(); ctx.fill(); };
+    poly([[x, y], [x + w, y], [x + w - k, ry], [x + k, ry]], faces[0]);
+    poly([[x, y], [x + k, ry], [x, y + h]], faces[1]);
+    poly([[x, y + h], [x + k, ry], [x + w - k, ry], [x + w, y + h]], faces[2]);
+    poly([[x + w, y], [x + w, y + h], [x + w - k, ry]], faces[3]);
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1.5; ctx.beginPath();
+    for (let i = x + 6; i < x + w; i += 9) { ctx.moveTo(i, y); ctx.lineTo(i, y + h); }
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(x, y); ctx.lineTo(x + k, ry); ctx.lineTo(x, y + h);
+    ctx.moveTo(x + w, y); ctx.lineTo(x + w - k, ry); ctx.lineTo(x + w, y + h);
+    ctx.moveTo(x + k, ry); ctx.lineTo(x + w - k, ry); ctx.stroke();
+  }
+  // white walls with blue panels, as on the real plant
+  function wall(x, y, w, h) {
+    ctx.fillStyle = '#eef0ee'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = '#2f6fb5';
+    for (let i = x + 6; i < x + w - 6; i += 24) ctx.fillRect(i, y + 2, 11, h - 4);
+  }
+
   function drawShed() {
-    const x = 1050, y = 110, w = 260, h = 220;
+    const x = 1030, y = 110, w = 240, h = 190;
     drawZone(SHED, G.shed.stock > 0 && G.player.needles === 0 && dist(G.player, SHED) < SHED.r, null);
-    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x + 10, y + 12, w, h);
-    ctx.fillStyle = '#8f9a9e'; ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = 'rgba(60,70,75,.5)'; ctx.lineWidth = 2;
-    for (let i = 12; i < w; i += 14) { ctx.beginPath(); ctx.moveTo(x + i, y); ctx.lineTo(x + i, y + h); ctx.stroke(); }
-    ctx.fillStyle = '#6d7a80'; ctx.fillRect(x, y + h / 2 - 4, w, 8);
-    // open front with bundles inside
-    ctx.fillStyle = '#4a4134'; ctx.fillRect(x + 60, y + h - 40, 140, 40);
+    ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(x + 12, y + 14, w, h + 20);
+    hipRoof(x, y, w, h, ['#3aa88a', '#2f9579', '#23785f', '#1f6a54']);
+    wall(x, y + h, w, 20);
+    ctx.fillStyle = '#3b3328'; ctx.fillRect(x + 80, y + h + 3, 80, 17);
     const shown = Math.min(G.shed.stock, 10);
-    for (let i = 0; i < shown; i++) drawBundle(x + 78 + (i % 5) * 26, y + h - 28 + Math.floor(i / 5) * 14, 0.8);
-    label('RAW MATERIAL SHED', x + w / 2, y + 40, 18, '#f1e9d6');
-    label(G.shed.stock + ' / ' + SHED_CAP + ' bundles', x + w / 2, y + 66, 14, G.shed.stock ? '#f0c35a' : '#f1e9d6');
+    for (let i = 0; i < shown; i++) drawBundle(x + 70 + (i % 5) * 25, y + h + 36 + Math.floor(i / 5) * 15, 0.8);
+    label('RAW MATERIAL SHED', x + w / 2, y + 60, 18, '#f1e9d6');
+    label(G.shed.stock + ' / ' + SHED_CAP + ' bundles', x + w / 2, y + 86, 14, G.shed.stock ? '#f0c35a' : '#f1e9d6');
   }
 
   function drawPlant() {
-    const x = 1300, y = 500, w = 260, h = 300, PL = G.plant;
+    const x = 1300, y = 470, w = 260, h = 270, PL = G.plant;
     drawZone(HOPPER, G.player.bundles > 0 && dist(G.player, HOPPER) < HOPPER.r, 'HOPPER');
-    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x + 10, y + 12, w, h);
-    ctx.fillStyle = '#b5574a'; ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = 'rgba(90,35,30,.4)'; ctx.lineWidth = 2;
-    for (let i = 14; i < h; i += 16) { ctx.beginPath(); ctx.moveTo(x, y + i); ctx.lineTo(x + w, y + i); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(x + 12, y + 14, w, h + 22);
+    hipRoof(x, y, w, h, ['#3a95e0', '#2f86d6', '#2470bb', '#1f62a6']);
+    wall(x, y + h, w, 22);
     // chimney with smoke while running
-    ctx.fillStyle = '#6b6b6b'; ctx.beginPath(); ctx.arc(x + 210, y + 50, 20, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#2d2d2d'; ctx.beginPath(); ctx.arc(x + 210, y + 50, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#6b6b6b'; ctx.beginPath(); ctx.arc(x + 205, y + 55, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2d2d2d'; ctx.beginPath(); ctx.arc(x + 205, y + 55, 10, 0, Math.PI * 2); ctx.fill();
     if (PL.hopper > 0 || PL.proc > 0) {
       const tt = performance.now() / 600;
       for (let i = 0; i < 4; i++) {
         const k = (tt + i / 4) % 1;
-        ctx.fillStyle = `rgba(230,230,225,${0.4 * (1 - k)})`;
-        ctx.beginPath(); ctx.arc(x + 210 + k * 40, y + 50 - k * 70, 10 + k * 18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = `rgba(235,235,230,${0.45 * (1 - k)})`;
+        ctx.beginPath(); ctx.arc(x + 205 + k * 40, y + 55 - k * 70, 10 + k * 18, 0, Math.PI * 2); ctx.fill();
       }
     }
     // hopper funnel
     ctx.fillStyle = '#7b8a90';
-    ctx.beginPath(); ctx.moveTo(x - 20, y + 130); ctx.lineTo(x + 40, y + 130); ctx.lineTo(x + 28, y + 210); ctx.lineTo(x - 8, y + 210); ctx.closePath(); ctx.fill();
-    for (let i = 0; i < Math.min(PL.hopper, 4); i++) drawBundle(x + 10, y + 150 + i * 14, 0.7);
+    ctx.beginPath(); ctx.moveTo(x - 20, y + 110); ctx.lineTo(x + 40, y + 110); ctx.lineTo(x + 28, y + 190); ctx.lineTo(x - 8, y + 190); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < Math.min(PL.hopper, 4); i++) drawBundle(x + 10, y + 130 + i * 14, 0.7);
     label('PELLET PLANT', x + w / 2 + 20, y + 110, 20, '#f1e9d6');
     label('Hopper ' + PL.hopper + ' / ' + HOPPER_CAP, x + w / 2 + 20, y + 136, 14, PL.hopper ? '#f0c35a' : '#f1e9d6');
-    // progress ring
-    const cx = x + w / 2 + 20, cy = y + 200;
-    ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(40,20,15,.45)'; ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2); ctx.stroke();
+    const cx = x + w / 2 + 20, cy = y + 196;
+    ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(10,30,60,.35)'; ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2); ctx.stroke();
     ctx.strokeStyle = '#f0c35a'; ctx.beginPath(); ctx.arc(cx, cy, 26, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (PL.proc / val('pelletizer'))); ctx.stroke();
-    // pellet bags out front
-    const bags = Math.min(PL.bags, 18);
-    for (let i = 0; i < bags; i++) {
-      const bx = x + 40 + (i % 9) * 24, by = y + h + 26 + Math.floor(i / 9) * 22;
-      ctx.fillStyle = '#ede3c8'; roundRect(bx - 10, by - 9, 20, 18, 4); ctx.fill();
-      ctx.fillStyle = '#3a7040'; ctx.fillRect(bx - 6, by - 2, 12, 4);
+    // stacked pellet output in the yard, the front rows under a white sheet
+    const stacks = Math.min(PL.bags, 18);
+    for (let i = 0; i < stacks; i++) {
+      const bx = x + 30 + (i % 6) * 34, by = y + h + 54 + Math.floor(i / 6) * 22;
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(bx - 11, by - 6, 28, 18);
+      ctx.fillStyle = '#6e3b22'; ctx.fillRect(bx - 14, by - 9, 28, 18);
+      ctx.fillStyle = '#93522f'; ctx.fillRect(bx - 12, by - 7, 24, 6);
+      ctx.strokeStyle = 'rgba(40,20,10,.5)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(bx - 14, by + 2); ctx.lineTo(bx + 14, by + 2); ctx.moveTo(bx, by - 9); ctx.lineTo(bx, by + 9); ctx.stroke();
     }
-    if (PL.bags) label(PL.bags * PELLET_KG + ' kg pellets bagged', x + w / 2, y + h + 76, 13, '#f1e9d6');
+    if (PL.bags >= 6) { ctx.fillStyle = 'rgba(245,246,246,.85)'; roundRect(x + 12, y + h + 42, 6 * 34, 24, 6); ctx.fill(); }
+    if (PL.bags) label(PL.bags * PELLET_KG + ' kg pellets made', x + w / 2, y + h + 36, 13, '#f1e9d6');
   }
 
   function drawPerson(e, cloth, cap, isPlayer) {
@@ -908,7 +1029,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     ctx.fillStyle = '#18301f'; ctx.fillRect(0, 0, cw, ch);
     ctx.setTransform(dpr * scale, 0, 0, dpr * scale, -cam.x * scale * dpr, -cam.y * scale * dpr);
     if (bgLayer) ctx.drawImage(bgLayer, 0, -SKY, W, H + SKY);
-    label('CHIR PINE FOREST', 340, 26, 18, 'rgba(241,233,214,.8)');
+    label('CHIR PINE FOREST', 290, 26, 18, 'rgba(241,233,214,.8)');
     drawPatches(G.over);
     drawBaler();
     drawShed();
