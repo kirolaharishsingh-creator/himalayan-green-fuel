@@ -48,6 +48,7 @@ button:focus-visible { outline: 3px solid var(--pirul); outline-offset: 2px; }
 .stat .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--lichen); }
 .stat .v { font-family: var(--font-display); font-weight: 600; font-size: 18px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .stat .v.money { color: var(--gold); }
+.stat .v.burn { color: var(--fire); }
 .risk { width: 150px; }
 .meter { height: 9px; border-radius: 5px; background: var(--pine-2); border: 1px solid var(--pine-line); overflow: hidden; margin-top: 4px; }
 .meter i { display: block; height: 100%; width: 0; background: var(--pirul); transition: width .2s linear; }
@@ -125,6 +126,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     <div class="stat"><span class="k">Earnings</span><span class="v money" id="hMoney">₹0</span></div>
     <div class="stat"><span class="k">Pellets made</span><span class="v" id="hPellets">0 kg</span></div>
     <div class="stat"><span class="k">Season</span><span class="v" id="hTime">0:00</span></div>
+    <div class="stat"><span class="k">Forest burnt</span><span class="v" id="hBurnt">0%</span></div>
     <div class="stat risk" id="hRisk"><span class="k" id="hRiskLabel">Fire risk 0%</span><div class="meter"><i id="hRiskBar"></i></div></div>
   </header>
 
@@ -142,7 +144,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
           <li><span><b>Pick bundles up at the shed</b> and carry them to the pellet plant hopper.</span></li>
           <li><span><b>The plant presses pellets.</b> Each bundle makes 17 kg of pellets, sold at ₹9 a kg.</span></li>
         </ol>
-        <p class="keys">Tap or click where you want to walk, or use the arrow keys or WASD. Spend your earnings on upgrades and hired help. If the fire risk reaches 100%, the forest catches fire and the season ends.</p>
+        <p class="keys">Tap or click where you want to walk, or use the arrow keys or WASD. Spend your earnings on upgrades and hired help. Dry pirul left on the ground catches fire. Stand in the flames to beat them out with green branches before they spread. If a third of the forest burns, the season ends.</p>
         <div class="row">
           <button class="btn primary" id="startBtn">Start the season</button>
           <span class="best" id="bestLine"></span>
@@ -160,13 +162,14 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
 
     <div class="overlay" id="overOv" hidden>
       <div class="card">
-        <h2 id="overTitle">The forest caught fire</h2>
-        <p id="overText">Too much dry pirul piled up on the forest floor.</p>
+        <h2 id="overTitle">The forest burned</h2>
+        <p id="overText">A third of the chir pine forest burned. Every summer, dry pirul left on the ground feeds fires like this across Uttarakhand.</p>
         <div class="facts">
           <div><div class="k">Season lasted</div><div class="v" id="oTime">0:00</div></div>
           <div><div class="k">Pirul collected</div><div class="v" id="oCollected">0 kg</div></div>
           <div><div class="k">Pellets made</div><div class="v" id="oPellets">0 kg</div></div>
           <div><div class="k">Earnings</div><div class="v" id="oMoney">₹0</div></div>
+          <div><div class="k">Fires put out</div><div class="v" id="oFires">0</div></div>
         </div>
         <div class="row">
           <button class="btn primary" id="againBtn">Play another season</button>
@@ -238,6 +241,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
 
   // ---------- static scenery, from fixed seeds ----------
   const SKY = 230;              // height of the Himalayan skyline band above the map
+  let NFOREST = 0;             // trees that make up the forest (the rest stand by the village)
   const TREES = [];             // mostly chir pine, with some banj oak and buransh (rhododendron)
   (() => {
     const r = rng(11);
@@ -250,6 +254,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
       t.seed = Math.floor(r() * 1e9);
       TREES.push(t);
     }
+    NFOREST = TREES.length;
     for (const [x, y, kind, rad] of [[1590, 40, 'banj', 30], [1345, 425, 'chir', 30], [1585, 430, 'buransh', 26], [900, 60, 'chir', 28], [870, 960, 'chir', 30], [840, 130, 'chir', 30], [870, 420, 'chir', 32], [845, 650, 'chir', 28], [1110, 960, 'banj', 28], [1200, 30, 'chir', 26]]) {
       TREES.push({ x, y, kind, rad, seed: x * 7 + y });
     }
@@ -610,6 +615,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
       plant: { hopper: 0, proc: 0, bags: 0 },
       lv: { basket: 0, trolley: 0, truck: 0, pelletizer: 0, collector: 0, loader: 0 },
       npcs: [], xfer: 0,
+      fires: [], scorch: [], treeBurn: {}, firesOut: 0,
     };
     while (groundKg() < 60) spawnNeedles(1);
   }
@@ -629,6 +635,74 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   }
 
   function pop(x, y, text, color) { G.pops.push({ x, y, text, color: color || '#f1e9d6', t: 0 }); }
+
+  // ---------- forest fire ----------
+  const fireRadius = f => 16 + f.size * 26;
+  const nearestFire = e => { let best = null, bd = 1e9; for (const f of G.fires) { const d = dist(e, f); if (d < bd) { bd = d; best = f; } } return best; };
+  function burntShare() { let n = 0; for (let i = 0; i < NFOREST; i++) if ((G.treeBurn[i] || 0) >= 1) n++; return n / NFOREST; }
+  const fightsFire = e => G.fires.some(f => dist(e, f) < fireRadius(f) + 14);
+
+  function stepFires(dt) {
+    // the more dry pirul lies on the ground, the more often a pile catches
+    const risk = G.ground / FIRE_KG;
+    const p = clamp((risk - 0.35) * 0.09, 0, 0.12);
+    if (G.patches.length && rand() < p * dt) {
+      let pile = null;
+      for (let i = 0; i < 6; i++) { const c = G.patches[Math.floor(rand() * G.patches.length)]; if (!pile || c.kg > pile.kg) pile = c; }
+      if (!G.fires.some(f => dist(f, pile) < 40)) {
+        G.fires.push({ x: pile.x, y: pile.y, size: 0.25, spread: 0, fought: false });
+        pop(pile.x, pile.y - 34, 'Forest fire!', '#ec5434');
+      }
+    }
+    for (const f of G.fires) {
+      const rad = fireRadius(f);
+      let fuel = 0;
+      for (const pt of G.patches) {
+        if (Math.hypot(pt.x - f.x, pt.y - f.y) < rad) { const a = Math.min(pt.kg, 1.2 * f.size * dt); pt.kg -= a; fuel += pt.kg + a; }
+      }
+      // beaten out with green branches
+      for (const e of [G.player, ...G.npcs]) {
+        if (e.kind === 'loader') continue;
+        if (dist(e, f) < rad + 14) { f.size -= (e === G.player ? 0.8 : 0.45) * dt; f.fought = true; }
+      }
+      // trees in reach scorch, then burn, and a burning tree keeps the fire going
+      for (let i = 0; i < NFOREST; i++) {
+        const t = TREES[i], b = G.treeBurn[i] || 0;
+        if (b < 1 && Math.hypot(t.x - f.x, t.y - f.y) < t.rad + rad * 0.8) {
+          G.treeBurn[i] = Math.min(1, b + dt * Math.max(0, f.size) * 0.3);
+          fuel += 2;
+        }
+      }
+      if (fuel <= 0.2) f.size -= 0.15 * dt;
+      else if (f.size > 0) f.size = Math.min(1.5, f.size + 0.12 * dt);
+      // spread to the biggest nearby pile
+      f.spread += dt * Math.max(0, f.size);
+      if (f.spread >= 1.6) {
+        f.spread = 0;
+        let tgt = null;
+        for (const pt of G.patches) {
+          const d = Math.hypot(pt.x - f.x, pt.y - f.y);
+          if (d > 20 && d < 95 && pt.kg > 0.4 && (!tgt || pt.kg > tgt.kg) && !G.fires.some(o => Math.hypot(o.x - pt.x, o.y - pt.y) < 35)) tgt = pt;
+        }
+        if (!tgt) {
+          // no dry pile in reach: the flames climb into a nearby tree instead
+          for (let i = 0; i < NFOREST; i++) {
+            const t = TREES[i], d = Math.hypot(t.x - f.x, t.y - f.y);
+            if ((G.treeBurn[i] || 0) < 1 && d > 20 && d < 115 && !G.fires.some(o => Math.hypot(o.x - t.x, o.y - t.y) < 35)) { tgt = t; break; }
+          }
+        }
+        if (tgt) G.fires.push({ x: tgt.x, y: tgt.y, size: 0.2, spread: 0, fought: false });
+      }
+    }
+    for (const f of G.fires) {
+      if (f.size > 0) continue;
+      G.scorch.push({ x: f.x, y: f.y, r: 24 + rand() * 14 });
+      if (f.fought) { G.firesOut++; pop(f.x, f.y - 30, 'Fire out', '#f1e9d6'); }
+    }
+    G.fires = G.fires.filter(f => f.size > 0);
+    if (G.scorch.length > 160) G.scorch.splice(0, G.scorch.length - 160);
+    G.patches = G.patches.filter(p => p.kg > 0.05);
+  }
 
   // ---------- simulation ----------
   function moveTo(e, tx, ty, speed, dt) {
@@ -737,7 +811,8 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     } else PL.proc = 0;
 
     G.ground = groundKg();
-    if (G.ground >= FIRE_KG) endSeason();
+    stepFires(dt);
+    if (burntShare() >= 1 / 3) endSeason();
   }
 
   function handleCarry(e, cap) {
@@ -752,6 +827,11 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   }
 
   function stepCollector(n, dt) {
+    const f = nearestFire(n);
+    if (f && dist(n, f) < 520) {
+      if (dist(n, f) > fireRadius(f)) moveTo(n, f.x, f.y + 8, 165, dt);
+      return;
+    }
     const cap = 10;
     if (n.needles >= cap - 0.01 || (n.needles > 0 && G.patches.length === 0)) {
       moveTo(n, BALER.x + 30, BALER.y + 30, 150, dt);
@@ -986,6 +1066,86 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     if (PL.bags) label(PL.bags * PELLET_KG + ' kg pellets made', x + w / 2, y + h + 36, 13, '#f1e9d6');
   }
 
+  function drawScorch() {
+    for (const s of G.scorch) {
+      ctx.fillStyle = 'rgba(25,18,12,.5)'; ctx.beginPath(); ctx.ellipse(s.x, s.y, s.r, s.r * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(120,115,108,.35)'; ctx.beginPath(); ctx.ellipse(s.x - 4, s.y - 3, s.r * 0.45, s.r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function drawBurntTrees() {
+    for (const k in G.treeBurn) {
+      const b = G.treeBurn[k], t = TREES[k];
+      if (b >= 1) {
+        ctx.fillStyle = '#2a2420'; ctx.beginPath(); ctx.arc(t.x, t.y, t.rad * 1.12, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#120d0a'; ctx.lineWidth = 2.5; ctx.beginPath();
+        for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2 + t.x; ctx.moveTo(t.x, t.y); ctx.lineTo(t.x + Math.cos(a) * t.rad, t.y + Math.sin(a) * t.rad); }
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(150,145,140,.35)'; ctx.beginPath(); ctx.arc(t.x - 4, t.y - 4, t.rad * 0.35, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.fillStyle = `rgba(110,55,20,${b * 0.65})`; ctx.beginPath(); ctx.arc(t.x, t.y, t.rad * 1.1, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+
+  function tear(x, y, w, h) {
+    ctx.beginPath(); ctx.moveTo(x, y - h);
+    ctx.quadraticCurveTo(x + w, y - h * 0.3, x, y + w * 0.3);
+    ctx.quadraticCurveTo(x - w, y - h * 0.3, x, y - h); ctx.fill();
+  }
+  function drawFires() {
+    const now = performance.now() / 1000;
+    for (const f of G.fires) {
+      const R = fireRadius(f);
+      const glow = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, R * 2);
+      glow.addColorStop(0, 'rgba(255,140,40,.45)'); glow.addColorStop(1, 'rgba(255,90,20,0)');
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(f.x, f.y, R * 2, 0, Math.PI * 2); ctx.fill();
+      const n = 5 + Math.round(f.size * 6);
+      for (let i = 0; i < n; i++) {
+        const a = i / n * Math.PI * 2 + f.x, d = R * 0.6 * ((i * 37 % 10) / 10);
+        const fx = f.x + Math.cos(a) * d, fy = f.y + Math.sin(a) * d;
+        const h = 8 + f.size * 14 + (Math.sin(now * 9 + i * 1.7) + 1) * 3;
+        ctx.fillStyle = '#e8401f'; tear(fx, fy, h * 0.5, h);
+        ctx.fillStyle = '#f7932a'; tear(fx, fy + 1, h * 0.34, h * 0.7);
+        ctx.fillStyle = '#ffe07a'; tear(fx, fy + 2, h * 0.18, h * 0.4);
+      }
+    }
+  }
+  function drawSmoke() {
+    const now = performance.now() / 1000;
+    for (const f of G.fires) {
+      for (let i = 0; i < 6; i++) {
+        const k = (now * 0.35 + i / 6 + f.x / 97) % 1;
+        ctx.fillStyle = `rgba(70,65,60,${0.35 * (1 - k) * Math.min(1, f.size + 0.3)})`;
+        ctx.beginPath(); ctx.arc(f.x + k * 60 + Math.sin(now + i) * 6, f.y - 20 - k * 110, 10 + k * 30 * (0.5 + f.size), 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+  // a swinging green branch for anyone beating out flames
+  function drawBranch(e) {
+    const a = e.face + Math.sin(performance.now() / 70) * 1.1;
+    const ex = e.x + Math.cos(a) * 28, ey = e.y + Math.sin(a) * 28;
+    ctx.strokeStyle = '#5b3a1e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.fillStyle = '#3f7a3a';
+    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(ex - Math.cos(a) * i * 4 + (i % 2 ? 3 : -3), ey - Math.sin(a) * i * 4, 4, 0, Math.PI * 2); ctx.fill(); }
+  }
+  // arrows at the screen edge pointing to fires out of view
+  function drawFireAlerts() {
+    if (!G.fires.length) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (const f of G.fires) {
+      const sx = (f.x - cam.x) * scale, sy = (f.y - cam.y) * scale;
+      if (sx >= 0 && sx <= cw && sy >= 0 && sy <= ch) continue;
+      const m = 28, cx = clamp(sx, m, cw - m), cy = clamp(sy, m, ch - m), ang = Math.atan2(sy - cy, sx - cx);
+      ctx.fillStyle = '#ec5434';
+      ctx.beginPath(); ctx.arc(cx, cy, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang);
+      ctx.beginPath(); ctx.moveTo(24, 0); ctx.lineTo(13, -8); ctx.lineTo(13, 8); ctx.closePath(); ctx.fill(); ctx.restore();
+      ctx.fillStyle = '#fff'; ctx.font = '800 11px "Baloo 2", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('FIRE', cx, cy + 1);
+    }
+  }
+
   function drawPerson(e, cloth, cap, isPlayer) {
     const bob = Math.sin(e.step / 9) * 1.5;
     ctx.save(); ctx.translate(e.x, e.y + bob);
@@ -1029,6 +1189,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     ctx.fillStyle = '#18301f'; ctx.fillRect(0, 0, cw, ch);
     ctx.setTransform(dpr * scale, 0, 0, dpr * scale, -cam.x * scale * dpr, -cam.y * scale * dpr);
     if (bgLayer) ctx.drawImage(bgLayer, 0, -SKY, W, H + SKY);
+    drawScorch();
     label('CHIR PINE FOREST', 290, 26, 18, 'rgba(241,233,214,.8)');
     drawPatches(G.over);
     drawBaler();
@@ -1036,15 +1197,20 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     drawPlant();
     drawTruck();
     if (treeLayer) ctx.drawImage(treeLayer, 0, 0, W, H);
+    drawBurntTrees();
+    drawFires();
     drawTarget();
     const cols = ['#b8322c', '#d4a020', '#8c3a7a', '#2f7d6d'];
     for (const n of G.npcs) drawPerson(n, n.kind === 'loader' ? '#3d6b8c' : cols[n.hue % cols.length], n.kind === 'loader' ? '#22313a' : '#f1e9d6', false);
+    for (const e of [G.player, ...G.npcs]) if (e.kind !== 'loader' && fightsFire(e)) drawBranch(e);
     drawPerson(G.player, '#e8e1cf', '#2b2b33', true);
+    drawSmoke();
     drawPops(dt);
     if (G.over) {
       ctx.fillStyle = `rgba(236,84,52,${0.12 + Math.sin(performance.now() / 200) * 0.05})`;
       ctx.fillRect(0, 0, 700, H);
     }
+    drawFireAlerts();
   }
 
   // ---------- HUD ----------
@@ -1055,6 +1221,9 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     $('hMoney').textContent = fmtRs(G.money);
     $('hPellets').textContent = fmtKg(G.pellets);
     $('hTime').textContent = fmtTime(G.t);
+    const burnt = burntShare();
+    $('hBurnt').textContent = Math.round(burnt * 100) + '%';
+    $('hBurnt').classList.toggle('burn', burnt > 0);
     const risk = clamp(G.ground / FIRE_KG, 0, 1);
     $('hRiskBar').style.width = (risk * 100).toFixed(1) + '%';
     $('hRiskLabel').textContent = 'Fire risk ' + Math.round(risk * 100) + '%';
@@ -1071,6 +1240,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   function hint() {
     const P = G.player, T = G.truck, cap = val('basket');
     if (G.over) return 'The forest is burning.';
+    if (G.fires.length) return 'Forest fire! Run into the flames and beat them out with green branches.';
     if (P.bundles > 0) return G.plant.hopper >= HOPPER_CAP ? 'The hopper is full. Wait for the plant to catch up.' : 'Carry the bundles to the pellet plant hopper.';
     if (P.needles >= cap - 0.01) return 'Your doko is full. Empty it at the baling press.';
     if (G.ground / FIRE_KG >= 0.7) return 'Fire risk is high. Rake pirul fast, or hire collectors.';
@@ -1128,6 +1298,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     $('oCollected').textContent = fmtKg(G.collected);
     $('oPellets').textContent = fmtKg(G.pellets);
     $('oMoney').textContent = fmtRs(G.money);
+    $('oFires').textContent = G.firesOut;
     $('overBest').textContent = 'Best season: ' + fmtKg(Number(store.get('pirulBest') || 0)) + ' of pellets';
     $('overOv').hidden = false; $('againBtn').focus();
   }
@@ -1175,7 +1346,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   function boot(data) {
     newGame();
     if (data && data.save) {
-      G = data.save;
+      G = Object.assign(G, data.save);
       $('startOv').hidden = G.running || G.over;
       if (G.paused) { G.paused = false; }
     } else showStart();
