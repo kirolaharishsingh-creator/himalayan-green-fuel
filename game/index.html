@@ -236,22 +236,263 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     }
   }
 
-  // static forest: chir pines and floor speckle, from a fixed seed
-  const TREES = [];
+  // ---------- static scenery, from fixed seeds ----------
+  const SKY = 230;              // height of the Himalayan skyline band above the map
+  const TREES = [];             // mostly chir pine, with some banj oak and buransh (rhododendron)
   (() => {
     const r = rng(11);
     let tries = 0;
-    while (TREES.length < 46 && tries++ < 3000) {
-      const t = { x: FOREST.x0 + 20 + r() * (FOREST.x1 - FOREST.x0 - 20), y: FOREST.y0 + r() * (FOREST.y1 - FOREST.y0), rad: 24 + r() * 16 };
-      if (TREES.some(o => dist(o, t) < o.rad + t.rad + 30)) continue;
-      const pts = [], n = 18;
-      for (let i = 0; i < n; i++) pts.push((i % 2 ? 0.62 : 1) * (0.9 + r() * 0.2));
-      t.pts = pts; t.rot = r() * Math.PI; t.shade = r();
+    while (TREES.length < 48 && tries++ < 4000) {
+      const t = { x: FOREST.x0 + 10 + r() * (FOREST.x1 - FOREST.x0 - 10), y: FOREST.y0 - 10 + r() * (FOREST.y1 - FOREST.y0 + 20), rad: 26 + r() * 16 };
+      if (TREES.some(o => dist(o, t) < o.rad + t.rad + 26)) continue;
+      const s = r();
+      t.kind = s < 0.74 ? 'chir' : s < 0.88 ? 'banj' : 'buransh';
+      t.seed = Math.floor(r() * 1e9);
       TREES.push(t);
     }
+    for (const [x, y, kind, rad] of [[1590, 40, 'banj', 30], [1345, 440, 'chir', 30], [1585, 430, 'buransh', 26], [960, 60, 'chir', 28], [700, 965, 'chir', 30]]) {
+      TREES.push({ x, y, kind, rad, seed: x * 7 + y });
+    }
   })();
-  const SPECKS = [];
-  (() => { const r = rng(5); for (let i = 0; i < 420; i++) SPECKS.push({ x: r() * W, y: r() * H, s: 1 + r() * 2.5, c: r() }); })();
+
+  const LAYER_RES = 1.5;
+  let bgLayer = null, treeLayer = null;
+  function makeLayer(w, h) {
+    const c = document.createElement('canvas');
+    c.width = Math.round(w * LAYER_RES); c.height = Math.round(h * LAYER_RES);
+    const g = c.getContext('2d'); g.scale(LAYER_RES, LAYER_RES);
+    return [c, g];
+  }
+  function buildLayers() {
+    let g;
+    [bgLayer, g] = makeLayer(W, H + SKY);
+    g.translate(0, SKY);
+    drawSkyline(g); drawGround(g); drawVillage(g);
+    [treeLayer, g] = makeLayer(W, H);
+    for (const t of TREES) drawTree(g, t);
+  }
+
+  function ridge(r, step, base, amp, bumps) {
+    const pts = [];
+    for (let x = -20; x <= W + 20; x += step) {
+      let y = base + (r() - 0.5) * amp;
+      for (const [bx, bh, bw] of bumps) y -= bh * Math.exp(-((x - bx) ** 2) / (2 * bw * bw));
+      pts.push([x, y]);
+    }
+    return pts;
+  }
+  function fillRidge(g, pts, bottom, fill) {
+    g.fillStyle = fill; g.beginPath(); g.moveTo(pts[0][0], bottom);
+    for (const [x, y] of pts) g.lineTo(x, y);
+    g.lineTo(pts[pts.length - 1][0], bottom); g.closePath(); g.fill();
+  }
+
+  function drawSkyline(g) {
+    const r = rng(23);
+    const sky = g.createLinearGradient(0, -SKY, 0, 0);
+    sky.addColorStop(0, '#7fa9c9'); sky.addColorStop(0.7, '#d9e6ea'); sky.addColorStop(1, '#e9eee9');
+    g.fillStyle = sky; g.fillRect(0, -SKY, W, SKY);
+    // the snow range as seen from Almora
+    const PEAKS = [[330, 125, 60, 'Trishul'], [410, 98, 45], [860, 150, 55, 'Nanda Devi'], [935, 126, 40], [1330, 116, 38, 'Panchachuli'], [1390, 110, 32], [1450, 102, 32],
+      [600, 70, 90], [1120, 78, 90], [120, 60, 80], [1570, 70, 70]];
+    const far = ridge(r, 10, -55, 10, PEAKS);
+    fillRidge(g, far, -20, '#9db0c6');
+    g.save();
+    g.beginPath(); g.moveTo(-20, -20); for (const [x, y] of far) g.lineTo(x, y); g.lineTo(W + 20, -20); g.closePath(); g.clip();
+    g.fillStyle = '#f5f8fa'; g.beginPath(); g.moveTo(-20, -SKY);
+    for (let x = -20; x <= W + 20; x += 14) g.lineTo(x, -112 + Math.sin(x / 23) * 9 + (r() - 0.5) * 16);
+    g.lineTo(W + 20, -SKY); g.closePath(); g.fill();
+    // shadowed east faces
+    g.fillStyle = 'rgba(105,125,165,.32)';
+    for (let i = 1; i < far.length; i++) {
+      const [x0, y0] = far[i - 1], [x1, y1] = far[i];
+      if (y1 > y0 + 1.5) { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.lineTo(x1 - 26, y1 + 46); g.lineTo(x0 - 26, y0 + 46); g.closePath(); g.fill(); }
+    }
+    g.restore();
+    g.font = '600 13px "Hind", "Segoe UI", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.fillStyle = 'rgba(40,62,90,.8)';
+    for (const p of PEAKS) if (p[3]) g.fillText(p[3], p[0], -55 - p[1] - 10);
+    // haze, then the nearer Kumaon ridges
+    const haze = g.createLinearGradient(0, -95, 0, -25);
+    haze.addColorStop(0, 'rgba(225,234,236,0)'); haze.addColorStop(1, 'rgba(225,234,236,.9)');
+    g.fillStyle = haze; g.fillRect(0, -95, W, 75);
+    fillRidge(g, ridge(r, 30, -44, 14, [[200, 30, 160], [700, 22, 200], [1250, 34, 180]]), 0, '#7f97a3');
+    const near = ridge(r, 22, -14, 10, [[450, 22, 220], [1050, 16, 160]]);
+    fillRidge(g, near, 4, '#4b6850');
+    g.fillStyle = '#3a5642';
+    for (const [x, y] of near) {
+      for (let k = 0; k < 2; k++) {
+        const px = x + r() * 22, h = 8 + r() * 11;
+        g.beginPath(); g.moveTo(px - 4, y + 4); g.lineTo(px, y - h); g.lineTo(px + 4, y + 4); g.closePath(); g.fill();
+      }
+    }
+  }
+
+  function drawGround(g) {
+    const r = rng(5);
+    // terraced fields on the open hillside, each step held up by a dry-stone wall
+    g.fillStyle = '#b89a62'; g.fillRect(0, 0, W, H);
+    const CROPS = ['#c9a96b', '#a7b45e', '#d8bb4a', '#bfa064', '#93a95a', '#c4a46e'];
+    const edge = (x, y) => y + Math.sin(x / 150 + y * 0.7) * 10 + Math.sin(x / 47 + y) * 3;
+    const curve = (y, dy) => { g.beginPath(); for (let x = 660; x <= W; x += 20) { const yy = edge(x, y) + dy; x === 660 ? g.moveTo(x, yy) : g.lineTo(x, yy); } };
+    for (let y = -20; y < H; y += 64) {
+      g.fillStyle = CROPS[Math.floor(r() * CROPS.length)];
+      g.beginPath();
+      for (let x = 660; x <= W; x += 20) { const yy = edge(x, y); x === 660 ? g.moveTo(x, yy) : g.lineTo(x, yy); }
+      for (let x = W; x >= 660; x -= 20) g.lineTo(x, edge(x, y + 64));
+      g.closePath(); g.fill();
+      g.strokeStyle = 'rgba(70,60,30,.16)'; g.lineWidth = 2;
+      for (let k = 14; k < 60; k += 12) { curve(y, k); g.stroke(); }
+      g.lineWidth = 6; g.strokeStyle = '#857a66'; curve(y + 64, 0); g.stroke();
+      g.lineWidth = 2; g.strokeStyle = '#bdb19a'; curve(y + 64, -3); g.stroke();
+    }
+
+    // forest floor, carpeted in old pirul
+    const fx = y => 680 + Math.sin(y / 70) * 18;
+    g.fillStyle = '#6e5634';
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(fx(0), 0);
+    for (let y = 0; y <= H; y += 25) g.lineTo(fx(y), y);
+    g.lineTo(0, H); g.closePath(); g.fill();
+    g.save(); g.clip();
+    const FLOOR = ['rgba(128,84,44,.45)', 'rgba(88,92,48,.4)', 'rgba(70,58,34,.45)', 'rgba(150,104,56,.35)'];
+    for (let i = 0; i < 320; i++) {
+      g.fillStyle = FLOOR[i % 4]; g.beginPath();
+      g.ellipse(r() * 720, r() * H, 18 + r() * 46, 10 + r() * 26, r() * Math.PI, 0, Math.PI * 2); g.fill();
+    }
+    g.lineWidth = 1.1;
+    for (const col of ['rgba(176,112,58,.35)', 'rgba(110,72,38,.4)', 'rgba(200,150,90,.22)']) {
+      g.strokeStyle = col; g.beginPath();
+      for (let i = 0; i < 1400; i++) {
+        const x = r() * 720, y = r() * H, a = r() * Math.PI, l = 5 + r() * 6;
+        g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l);
+      }
+      g.stroke();
+    }
+    g.strokeStyle = 'rgba(120,140,70,.5)'; g.lineWidth = 1.4; g.beginPath();
+    for (let i = 0; i < 90; i++) {
+      const x = r() * 700, y = r() * H;
+      for (let k = -2; k <= 2; k++) { g.moveTo(x, y); g.lineTo(x + k * 3, y - 7 - r() * 4); }
+    }
+    g.stroke();
+    // fallen pine cones
+    for (let i = 0; i < 45; i++) {
+      const x = r() * 680, y = r() * H, a = r() * Math.PI;
+      g.fillStyle = '#5a3a1e'; g.beginPath(); g.ellipse(x, y, 4.5, 2.8, a, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#8a5a30'; g.beginPath(); g.ellipse(x - 1, y - 1, 2.2, 1.3, a, 0, Math.PI * 2); g.fill();
+    }
+    // boulders
+    for (let i = 0; i < 22; i++) {
+      let x, y, n = 0;
+      do { x = 40 + r() * 600; y = 30 + r() * (H - 60); } while (inCanopy(x, y, 6) && ++n < 20);
+      const s = 6 + r() * 12, a = r();
+      g.fillStyle = 'rgba(30,25,15,.35)'; g.beginPath(); g.ellipse(x + 3, y + 4, s * 1.1, s * 0.8, a, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#8a877c'; g.beginPath(); g.ellipse(x, y, s * 1.1, s * 0.8, a, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#b3afa1'; g.beginPath(); g.ellipse(x - s * 0.3, y - s * 0.25, s * 0.5, s * 0.35, a, 0, Math.PI * 2); g.fill();
+    }
+    g.restore();
+    // kilmora and lantana scrub along the forest margin
+    for (let y = 10; y < H; y += 34) {
+      const x = fx(y) + (r() - 0.5) * 16;
+      g.fillStyle = '#4f6a3a'; g.beginPath(); g.arc(x, y, 9 + r() * 6, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#617d45'; g.beginPath(); g.arc(x - 3, y - 3, 5 + r() * 3, 0, Math.PI * 2); g.fill();
+    }
+
+    // motor road with tyre ruts
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    const road = () => { g.beginPath(); ROAD.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x - 40, p.y)); g.lineTo(1000, 230); };
+    g.strokeStyle = '#7a6a52'; g.lineWidth = 64; road(); g.stroke();
+    g.strokeStyle = '#9a8566'; g.lineWidth = 56; road(); g.stroke();
+    g.strokeStyle = 'rgba(90,75,55,.45)'; g.lineWidth = 4;
+    for (const off of [-12, 12]) {
+      g.save(); g.translate(off * 0.7, off * 0.7); road(); g.stroke(); g.restore();
+    }
+    // footpaths: shed to plant, and up to the village
+    g.strokeStyle = 'rgba(110, 85, 50, .45)'; g.lineWidth = 22;
+    g.beginPath(); g.moveTo(SHED.x, SHED.y); g.quadraticCurveTo(1200, 560, HOPPER.x, HOPPER.y); g.stroke();
+    g.lineWidth = 12;
+    g.beginPath(); g.moveTo(SHED.x + 40, SHED.y); g.quadraticCurveTo(1380, 330, 1430, 250); g.lineTo(1420, 150); g.stroke();
+    g.lineCap = 'butt';
+    // shade where the hillside meets the skyline
+    const sh = g.createLinearGradient(0, 0, 0, 36);
+    sh.addColorStop(0, 'rgba(30,40,30,.35)'); sh.addColorStop(1, 'rgba(30,40,30,0)');
+    g.fillStyle = sh; g.fillRect(0, 0, W, 36);
+  }
+
+  function slateHouse(g, x, y, w, h) {
+    g.fillStyle = 'rgba(30,25,20,.35)'; g.fillRect(x + 8, y + 10, w, h);
+    // flagstone courtyard (aangan) in front
+    g.fillStyle = '#a59c8a'; g.fillRect(x - 6, y + h, w + 12, 22);
+    g.strokeStyle = 'rgba(80,75,65,.4)'; g.lineWidth = 1;
+    for (let i = 0; i <= w + 12; i += 14) { g.beginPath(); g.moveTo(x - 6 + i, y + h); g.lineTo(x - 6 + i, y + h + 22); g.stroke(); }
+    // two-pitch roof of grey pathal slates
+    g.fillStyle = '#6f7a80'; g.fillRect(x, y, w, h / 2);
+    g.fillStyle = '#5c666c'; g.fillRect(x, y + h / 2, w, h / 2);
+    g.strokeStyle = 'rgba(40,45,50,.45)';
+    for (let j = 0; j < h; j += 7) {
+      g.beginPath(); g.moveTo(x, y + j); g.lineTo(x + w, y + j); g.stroke();
+      for (let i = (j / 7) % 2 ? 6 : 0; i < w; i += 12) { g.beginPath(); g.moveTo(x + i, y + j); g.lineTo(x + i, y + Math.min(j + 7, h)); g.stroke(); }
+    }
+    g.fillStyle = '#8c969b'; g.fillRect(x - 2, y + h / 2 - 2, w + 4, 4);
+  }
+
+  function drawVillage(g) {
+    slateHouse(g, 1372, 62, 92, 54);
+    slateHouse(g, 1490, 168, 82, 48);
+    // small mandir with a red flag and a string of pennants
+    const x = 1470, y = 350;
+    g.fillStyle = 'rgba(30,25,20,.35)'; g.fillRect(x - 18, y - 14, 46, 46);
+    g.fillStyle = '#a59c8a'; g.fillRect(x - 30, y - 30, 60, 60);
+    ['#efe9dc', '#ddd3bf', '#efe9dc', '#d4c9b0'].forEach((c, i) => { const s = 22 - i * 5; g.fillStyle = c; g.fillRect(x - s, y - s, s * 2, s * 2); });
+    g.fillStyle = '#d4a020'; g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#5a4630'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 22, y - 22); g.lineTo(x + 34, y - 44); g.stroke();
+    g.fillStyle = '#c8283a'; g.beginPath(); g.moveTo(x + 34, y - 44); g.lineTo(x + 54, y - 39); g.lineTo(x + 34, y - 33); g.closePath(); g.fill();
+    const P0 = [x - 30, y - 30], C = [x - 70, y - 4], P1 = [x - 118, y - 40];
+    g.strokeStyle = 'rgba(60,50,40,.6)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(...P0); g.quadraticCurveTo(...C, ...P1); g.stroke();
+    for (let i = 1; i < 10; i++) {
+      const k = i / 10, a = (1 - k) * (1 - k), b = 2 * k * (1 - k), c = k * k;
+      const px = a * P0[0] + b * C[0] + c * P1[0], py = a * P0[1] + b * C[1] + c * P1[1];
+      g.fillStyle = i % 2 ? '#c8283a' : '#f1ece0';
+      g.beginPath(); g.moveTo(px - 4, py); g.lineTo(px + 4, py); g.lineTo(px, py + 9); g.closePath(); g.fill();
+    }
+  }
+
+  function drawTree(g, t) {
+    const r = rng(t.seed), R = t.rad, TAU = Math.PI * 2;
+    g.fillStyle = 'rgba(25,20,10,.32)'; g.beginPath(); g.ellipse(t.x + 10, t.y + 12, R * 1.02, R * 0.85, 0, 0, TAU); g.fill();
+    if (t.kind === 'chir') {
+      // reddish trunk, then open tufts of long blue-green needles
+      g.strokeStyle = '#7a4128'; g.lineWidth = 6; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(t.x, t.y); g.lineTo(t.x + 7, t.y + 17); g.stroke(); g.lineCap = 'butt';
+      const n = 6 + Math.floor(r() * 3), tufts = [[0, 0]];
+      for (let i = 0; i < n; i++) { const a = i / n * TAU + r() * 0.5, d = R * (0.45 + r() * 0.2); tufts.push([Math.cos(a) * d, Math.sin(a) * d]); }
+      g.fillStyle = '#365c40';
+      for (const [dx, dy] of tufts) { g.beginPath(); g.arc(t.x + dx, t.y + dy, R * (0.34 + r() * 0.1), 0, TAU); g.fill(); }
+      for (const [dx, dy] of tufts) {
+        const x = t.x + dx - 2, y = t.y + dy - 2, tr = R * 0.27;
+        g.fillStyle = '#4c7a50'; g.beginPath(); g.arc(x, y, tr, 0, TAU); g.fill();
+        g.strokeStyle = '#7da86c'; g.lineWidth = 1.1; g.beginPath();
+        for (let k = 0; k < 12; k++) { const a = r() * TAU, l = tr * (0.7 + r() * 0.6); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); }
+        g.stroke();
+      }
+    } else {
+      // banj oak and buransh: dense rounded crowns
+      const buransh = t.kind === 'buransh';
+      g.fillStyle = buransh ? '#34552f' : '#2c472c';
+      for (let i = 0; i < 10; i++) { const a = r() * TAU, d = r() * R * 0.5; g.beginPath(); g.arc(t.x + Math.cos(a) * d, t.y + Math.sin(a) * d, R * (0.38 + r() * 0.14), 0, TAU); g.fill(); }
+      g.fillStyle = buransh ? '#4a7040' : '#42633b';
+      for (let i = 0; i < 6; i++) { const a = r() * TAU, d = r() * R * 0.45; g.beginPath(); g.arc(t.x + Math.cos(a) * d - 3, t.y + Math.sin(a) * d - 3, R * 0.22, 0, TAU); g.fill(); }
+      g.fillStyle = buransh ? '#5e8a4e' : '#5a7d48';
+      for (let i = 0; i < 26; i++) { const a = r() * TAU, d = r() * R * 0.8; g.fillRect(t.x + Math.cos(a) * d, t.y + Math.sin(a) * d, 2, 2); }
+      if (buransh) {
+        for (let i = 0; i < 16; i++) {
+          const a = r() * TAU, d = r() * R * 0.75, x = t.x + Math.cos(a) * d, y = t.y + Math.sin(a) * d;
+          g.fillStyle = '#c41e3a'; g.beginPath(); g.arc(x, y, 3.2 + r() * 1.2, 0, TAU); g.fill();
+          g.fillStyle = '#ef6a7a'; g.beginPath(); g.arc(x - 1, y - 1, 1.4, 0, TAU); g.fill();
+        }
+      }
+    }
+  }
 
   function inCanopy(x, y, pad) { return TREES.some(t => Math.hypot(t.x - x, t.y - y) < t.rad + pad); }
 
@@ -465,12 +706,12 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
   new ResizeObserver(resize).observe(cv);
 
   function updateCamera() {
-    const fit = Math.min(cw / W, ch / H);
+    const fit = Math.min(cw / W, ch / (H + SKY));
     // show the whole map when it is readable; on small screens zoom in and follow the player
     scale = fit >= 0.5 ? fit : Math.max(fit, Math.min(cw, ch) / 640);
     const vw = cw / scale, vh = ch / scale, P = G.player;
     cam.x = vw >= W ? (W - vw) / 2 : clamp(P.x - vw / 2, 0, W - vw);
-    cam.y = vh >= H ? (H - vh) / 2 : clamp(P.y - vh / 2, 0, H - vh);
+    cam.y = vh >= H + SKY ? -SKY - (vh - H - SKY) / 2 : clamp(P.y - vh / 2, -SKY, H - vh);
   }
 
   function label(text, x, y, size, color, align) {
@@ -482,37 +723,6 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
 
   function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
 
-  function drawGround() {
-    // terraced hillside clearing
-    ctx.fillStyle = '#c3a46a'; ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = 'rgba(120, 90, 45, .35)'; ctx.lineWidth = 3;
-    for (let y = 40; y < H; y += 70) {
-      ctx.beginPath();
-      for (let x = 660; x <= W; x += 40) { const yy = y + Math.sin(x / 140 + y) * 8; x === 660 ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy); }
-      ctx.stroke();
-    }
-    // forest floor
-    ctx.fillStyle = '#5d5a32';
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(690, 0);
-    for (let y = 0; y <= H; y += 50) ctx.lineTo(680 + Math.sin(y / 70) * 18, y);
-    ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
-    for (const s of SPECKS) {
-      if (s.x > 670) continue;
-      ctx.fillStyle = s.c > .5 ? 'rgba(40,45,25,.5)' : 'rgba(140,120,70,.35)';
-      ctx.fillRect(s.x, s.y, s.s, s.s);
-    }
-    // road
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#8c7a5e'; ctx.lineWidth = 58;
-    ctx.beginPath(); ROAD.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x - 40, p.y)); ctx.lineTo(1000, 230); ctx.stroke();
-    ctx.strokeStyle = 'rgba(241,233,214,.35)'; ctx.lineWidth = 3; ctx.setLineDash([18, 16]);
-    ctx.beginPath(); ROAD.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x - 40, p.y)); ctx.lineTo(1000, 230); ctx.stroke();
-    // foot trail shed -> plant
-    ctx.strokeStyle = 'rgba(110, 85, 50, .45)'; ctx.lineWidth = 22; ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(SHED.x, SHED.y); ctx.quadraticCurveTo(1200, 560, HOPPER.x, HOPPER.y); ctx.stroke();
-    ctx.lineCap = 'butt';
-  }
-
   function drawZone(z, active, text) {
     ctx.save();
     ctx.setLineDash([10, 8]); ctx.lineWidth = 3;
@@ -523,8 +733,11 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     if (text) label(text, z.x, z.y + z.r + 14, 15, active ? '#f0c35a' : '#f1e9d6');
   }
 
-  const NEEDLE_COLS = ['#c97a35', '#d9a05b', '#a85f2a'];
+  const NEEDLE_COLS = ['#d9963f', '#ebbd6e', '#b8692c'];
   function drawPatches(burning) {
+    ctx.fillStyle = 'rgba(45,28,12,.3)'; ctx.beginPath();
+    for (const p of G.patches) { const sp = 8 + Math.sqrt(p.kg) * 7; ctx.moveTo(p.x + sp, p.y); ctx.ellipse(p.x, p.y, sp, sp * 0.8, 0, 0, Math.PI * 2); }
+    ctx.fill();
     for (let c = 0; c < 3; c++) {
       ctx.strokeStyle = NEEDLE_COLS[c]; ctx.lineWidth = 1.6; ctx.beginPath();
       for (const p of G.patches) {
@@ -548,24 +761,6 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
           ctx.fillStyle = i === 0 ? 'rgba(236,84,52,.75)' : i === 1 ? 'rgba(245,150,50,.7)' : 'rgba(255,220,110,.6)';
           ctx.beginPath(); ctx.arc(fx, fy, Math.max(2, fr - i * 3), 0, Math.PI * 2); ctx.fill();
         }
-      }
-    }
-  }
-
-  function drawTrees() {
-    for (const t of TREES) {
-      ctx.fillStyle = 'rgba(20,25,10,.35)';
-      ctx.beginPath(); ctx.ellipse(t.x + 8, t.y + 10, t.rad, t.rad * 0.85, 0, 0, Math.PI * 2); ctx.fill();
-      const layers = [[1, t.shade > .5 ? '#2c5a33' : '#264f2d'], [0.7, '#3a7040'], [0.38, '#4f8a4b']];
-      for (const [k, col] of layers) {
-        ctx.fillStyle = col; ctx.beginPath();
-        const n = t.pts.length;
-        for (let i = 0; i < n; i++) {
-          const a = t.rot + i / n * Math.PI * 2, rr = t.rad * k * t.pts[i];
-          const x = t.x + Math.cos(a) * rr, y = t.y + Math.sin(a) * rr;
-          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-        }
-        ctx.closePath(); ctx.fill();
       }
     }
   }
@@ -712,14 +907,14 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#18301f'; ctx.fillRect(0, 0, cw, ch);
     ctx.setTransform(dpr * scale, 0, 0, dpr * scale, -cam.x * scale * dpr, -cam.y * scale * dpr);
-    drawGround();
+    if (bgLayer) ctx.drawImage(bgLayer, 0, -SKY, W, H + SKY);
     label('CHIR PINE FOREST', 340, 26, 18, 'rgba(241,233,214,.8)');
     drawPatches(G.over);
     drawBaler();
     drawShed();
     drawPlant();
     drawTruck();
-    drawTrees();
+    if (treeLayer) ctx.drawImage(treeLayer, 0, 0, W, H);
     drawTarget();
     const cols = ['#b8322c', '#d4a020', '#8c3a7a', '#2f7d6d'];
     for (const n of G.npcs) drawPerson(n, n.kind === 'loader' ? '#3d6b8c' : cols[n.hue % cols.length], n.kind === 'loader' ? '#22313a' : '#f1e9d6', false);
@@ -863,6 +1058,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: 
       $('startOv').hidden = G.running || G.over;
       if (G.paused) { G.paused = false; }
     } else showStart();
+    buildLayers(); document.fonts?.ready.then(buildLayers);
     resize(); updateHud();
     requestAnimationFrame(frame);
   }
